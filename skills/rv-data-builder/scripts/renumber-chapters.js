@@ -18,8 +18,14 @@ let d
 try { d = JSON.parse(fs.readFileSync(P, 'utf8')) }
 catch (e) { console.error('读取/解析 data.json 失败（请确认 UTF-8 JSON）: ' + e.message); process.exit(1) }
 
-const CN = ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九', '十', '十一', '十二']
-const toCn = n => (n <= 12 ? CN[n] : String(n))
+const CN = ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九', '十']
+/* 阿拉伯数字 → 中文数字：支持 1-99（十一 / 二十 / 二十一…），避免 13 章以上出现「第13章」与中文数字混排 */
+const toCn = n => {
+  if (n <= 10) return CN[n]
+  if (n < 20) return '十' + CN[n - 10]
+  const t = Math.floor(n / 10), r = n % 10
+  return CN[t] + '十' + (r ? CN[r] : '')
+}
 /* 中文数字解析：支持 一…九十九（如 十三 / 二十 / 二十一），超 12 章也能识别 */
 function cnToNum(s) {
   if (!s) return null

@@ -29,21 +29,47 @@ class El {
     this._html = ''
     this.children = []
     this._attrs = {}
+    this.style = { setProperty() {}, getPropertyValue() { return '' }, removeProperty() {} }
+    this.dataset = {}
     this.classList = { add() {}, remove() {}, toggle() {}, contains() { return false } }
   }
+  /* 尺寸/位置接口：模板与增强脚本会读 rect 做定位（缺失会抛 TypeError 误判页面异常） */
+  getBoundingClientRect() { return { top: 0, left: 0, right: 0, bottom: 0, width: 0, height: 0, x: 0, y: 0 } }
+  get offsetWidth() { return 0 }
+  get offsetHeight() { return 0 }
+  get offsetTop() { return 0 }
+  get offsetLeft() { return 0 }
+  get clientWidth() { return 0 }
+  get clientHeight() { return 0 }
+  get scrollTop() { return 0 }
+  set scrollTop(v) {}
+  get scrollHeight() { return 0 }
   set innerHTML(v) { this._html = v }
   get innerHTML() { return this._html }
   set textContent(v) { this._t = v }
   get textContent() { return this._t }
   appendChild(c) { this.children.push(c); return c }
   append(...cs) { cs.forEach(c => this.children.push(c)) }
+  insertBefore(c) { this.children.push(c); return c }
+  removeChild() {}
+  insertAdjacentHTML() {}
   addEventListener() {}
+  removeEventListener() {}
+  dispatchEvent() { return true }
+  click() {}
   querySelector() { return new El('div') }
   querySelectorAll() { return [] }
+  getElementsByTagName() { return [] }
+  getElementsByClassName() { return [] }
   setAttribute(k, v) { this._attrs[k] = v }
   getAttribute(k) { return this._attrs[k] || '' }
+  removeAttribute() {}
   closest() { return null }
+  matches() { return false }
+  contains() { return false }
+  scrollIntoView() {}
   focus() {}
+  blur() {}
   remove() {}
 }
 
@@ -65,6 +91,13 @@ const localStorageMock = {
 
 /* vm 沙箱：window 指向全局对象，window.RV 与裸 RV 等价 */
 const sandbox = { document: documentMock, localStorage: localStorageMock }
+/* 浏览器 API 桩：模板/增强脚本可能使用（缺失会误判「页面脚本异常」） */
+sandbox.requestAnimationFrame = function (fn) { try { fn(0) } catch (e) {} return 0 }
+sandbox.cancelAnimationFrame = function () {}
+sandbox.setTimeout = setTimeout
+sandbox.clearTimeout = clearTimeout
+sandbox.getComputedStyle = function () { return { getPropertyValue() { return '' } } }
+sandbox.matchMedia = function () { return { matches: false, addEventListener() {}, addListener() {} } }
 sandbox.window = sandbox
 sandbox.window.addEventListener = function () {}
 sandbox.window.removeEventListener = function () {}

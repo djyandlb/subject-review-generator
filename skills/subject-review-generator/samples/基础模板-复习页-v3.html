@@ -114,7 +114,7 @@ img,svg{display:block}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:rgba(var(--header-rgb),0.18);border-radius:999px}
 ::-webkit-scrollbar-thumb:hover{background:rgba(var(--header-rgb),0.3)}
-*{scrollbar-width:thin;scrollbar-color:rgba(15,39,68,0.22) transparent}
+*{scrollbar-width:thin;scrollbar-color:rgba(var(--header-rgb),0.22) transparent}
 
 .app{
   display:grid;
@@ -129,6 +129,7 @@ img,svg{display:block}
   grid-area:header;display:flex;align-items:center;gap:12px;
   padding:0 16px 0 0;
   z-index:100;position:relative;color:var(--color-on-header);
+  /* 顶栏底色必须走 --color-header：主题通过 :root 覆盖该变量实现换配色 */
   background:var(--color-header);
   box-shadow:var(--shadow-header);
 }
@@ -170,7 +171,8 @@ img,svg{display:block}
 }
 .header-brand .brand-accent{
   font-family:var(--font-body);font-size:.68rem;font-weight:500;letter-spacing:.04em;
-  color:rgba(186,214,247,0.72);line-height:1.2;white-space:nowrap;
+  /* 顶栏副标题：由 on-header 色派生，避免硬编码浅蓝与暖色主题冲突 */
+  color:color-mix(in srgb,var(--color-on-header) 70%,transparent);line-height:1.2;white-space:nowrap;
 }
 
 /* Search — Codrops / industry pattern:
@@ -537,8 +539,8 @@ img,svg{display:block}
   background:#fff;
   box-shadow:
     -1px -1px 3px rgba(255,255,255,0.95),
-    1px 2px 6px rgba(15,39,68,0.10),
-    0 0 0 1px rgba(15,39,68,0.04);
+    1px 2px 6px rgba(var(--header-rgb),0.10),
+    0 0 0 1px rgba(var(--header-rgb),0.04);
   opacity:0;pointer-events:none;
   transition:transform 240ms var(--ease-out),width 240ms var(--ease-out),opacity 160ms var(--ease);
   will-change:transform,width;
@@ -558,7 +560,7 @@ img,svg{display:block}
 .mastery-tag:only-of-type{border-radius:calc(var(--radius-md) - 2px)}
 .mastery-tag + .mastery-tag::after{
   content:'';position:absolute;left:0;top:22%;bottom:22%;width:1px;z-index:0;
-  background:rgba(15,39,68,0.08);pointer-events:none;
+  background:rgba(var(--header-rgb),0.08);pointer-events:none;
   transition:opacity var(--transition-fast);
 }
 .mastery-tag.active + .mastery-tag::after,
@@ -1042,7 +1044,7 @@ img,svg{display:block}
 .checkbox-label input[type="checkbox"]{accent-color:var(--color-accent);width:15px;height:15px}
 .btn-primary{
   padding:9px 20px;border-radius:999px;font-size:.88rem;font-weight:600;
-  background:linear-gradient(135deg,var(--color-accent),#3b82f6);color:var(--color-on-header);
+  background:linear-gradient(135deg,var(--color-accent),var(--color-primary));color:var(--color-on-header);
   box-shadow:0 6px 18px rgba(var(--accent-rgb),0.3);transition:all var(--transition-fast);
 }
 .btn-primary:hover{transform:translateY(-1px);box-shadow:0 10px 24px rgba(var(--accent-rgb),0.38);filter:brightness(1.03)}
@@ -1054,7 +1056,7 @@ img,svg{display:block}
 
 .quiz-progress{height:6px;background:rgba(var(--header-rgb),0.06);border-radius:999px;margin-bottom:14px;overflow:hidden;box-shadow:inset 0 1px 2px rgba(0,0,0,0.04)}
 .quiz-progress-bar{
-  height:100%;border-radius:999px;background:linear-gradient(90deg,var(--color-primary),var(--color-accent),#60a5fa);
+  height:100%;border-radius:999px;background:linear-gradient(90deg,var(--color-primary),var(--color-accent),color-mix(in srgb,var(--color-accent) 45%,#fff));
   transition:width var(--transition-normal);box-shadow:0 0 12px rgba(var(--accent-rgb),0.4);
 }
 .quiz-question-stem{font-size:.95rem;font-weight:650;color:var(--text-main);margin-bottom:14px;line-height:1.55}
@@ -1387,7 +1389,7 @@ function getConceptById(id) {
   return null;
 }
 function getQuestionBank() {
-  return (typeof QUESTION_BANK !== 'undefined') ? QUESTION_BANK : { choice:[], truefalse:[], terminology:[] };
+  return (typeof QUESTION_BANK !== 'undefined') ? QUESTION_BANK : { choice:[], multi:[], truefalse:[], terminology:[], fill:[], essay:[] };
 }
 
 // ============================================================
@@ -2091,7 +2093,12 @@ function closeDetail() {
 // ============================================================
 function openQuizModal() {
   dom.quizModalTitle.textContent = '刷题模式';
-  dom.quizModalBody.innerHTML = '<div class="form-group"><label class="form-label">题目数量</label><input type="number" class="form-input" id="quizCount" value="20" min="1" max="200"></div><div class="form-group"><label class="form-label">题目类型</label><div class="checkbox-group"><label class="checkbox-label"><input type="checkbox" value="choice" checked> 选择题</label><label class="checkbox-label"><input type="checkbox" value="truefalse" checked> 判断题</label><label class="checkbox-label"><input type="checkbox" value="terminology"> 名词解释</label></div></div>';
+  /* 题型复选框由题库实际存在的题型动态生成（0 题题型不渲染），避免硬编码漏入口 */
+  var _qtypeMeta = { choice: '选择题', multi: '多选题', truefalse: '判断题', terminology: '名词解释', fill: '填空题', essay: '简答题' };
+  var _qbank0 = getQuestionBank();
+  var _qtypes = Object.keys(_qtypeMeta).filter(function (t) { return Array.isArray(_qbank0[t]) && _qbank0[t].length > 0; });
+  var _qchecks = _qtypes.map(function (t, i) { return '<label class="checkbox-label"><input type="checkbox" value="' + t + '"' + (i < 2 ? ' checked' : '') + '> ' + _qtypeMeta[t] + '</label>'; }).join('');
+  dom.quizModalBody.innerHTML = '<div class="form-group"><label class="form-label">题目数量</label><input type="number" class="form-input" id="quizCount" value="20" min="1" max="200"></div><div class="form-group"><label class="form-label">题目类型</label><div class="checkbox-group">' + _qchecks + '</div></div>';
   dom.quizModalFooter.innerHTML = '<button class="btn-secondary" id="quizModalCancel">取消</button><button class="btn-primary" id="quizModalStart">开始答题</button>';
   dom.quizModalOverlay.classList.add('show');
   document.getElementById('quizModalCancel').onclick = closeQuizModal;

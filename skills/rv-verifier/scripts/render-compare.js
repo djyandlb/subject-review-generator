@@ -24,16 +24,32 @@ function renderAndCollect(file) {
   if (!scripts.length) throw new Error('未找到内联 <script>（仅支持内联脚本的单文件网页）')
   const cache = {}
   class El {
-    constructor(tag) { this.tagName = tag; this._t = ''; this._html = ''; this.style = {}; this.classList = { add(){}, remove(){}, toggle(){}, contains(){return false} } }
+    constructor(tag) { this.tagName = tag; this._t = ''; this._html = ''; this.style = { setProperty(){}, getPropertyValue(){return ''}, removeProperty(){} }; this.dataset = {}; this.classList = { add(){}, remove(){}, toggle(){}, contains(){return false} } }
+    getBoundingClientRect() { return { top: 0, left: 0, right: 0, bottom: 0, width: 0, height: 0, x: 0, y: 0 } }
+    get offsetWidth() { return 0 }
+    get offsetHeight() { return 0 }
+    get clientWidth() { return 0 }
+    get clientHeight() { return 0 }
+    get scrollTop() { return 0 }
+    set scrollTop(v) {}
+    get scrollHeight() { return 0 }
     set innerHTML(v) { this._html = v }
     get innerHTML() { return this._html }
     set textContent(v) { this._t = v }
     get textContent() { return this._t }
     appendChild(c) { return c }
+    insertBefore(c) { return c }
+    removeChild() {}
+    insertAdjacentHTML() {}
     addEventListener() {}
+    removeEventListener() {}
+    dispatchEvent() { return true }
+    click() {}
     querySelector() { return new El('div') }
     querySelectorAll() { return [] }
-    setAttribute() {} getAttribute() { return '' } closest() { return null } focus() {} remove() {}
+    getElementsByTagName() { return [] }
+    getElementsByClassName() { return [] }
+    setAttribute() {} removeAttribute() {} getAttribute() { return '' } closest() { return null } matches() { return false } contains() { return false } scrollIntoView() {} focus() {} blur() {} remove() {}
   }
   const documentMock = {
     createElement(t) { return new El(t) },
@@ -44,6 +60,12 @@ function renderAndCollect(file) {
   }
   const localStorageMock = { _s:{}, getItem(k){return this._s[k]??null}, setItem(k,v){this._s[k]=String(v)} }
   const sandbox = { document: documentMock, localStorage: localStorageMock, console, addEventListener(){}, removeEventListener(){}, innerWidth:1024, innerHeight:768 }
+  sandbox.requestAnimationFrame = function (fn) { try { fn(0) } catch (e) {} return 0 }
+  sandbox.cancelAnimationFrame = function () {}
+  sandbox.setTimeout = setTimeout
+  sandbox.clearTimeout = clearTimeout
+  sandbox.getComputedStyle = function () { return { getPropertyValue() { return '' } } }
+  sandbox.matchMedia = function () { return { matches: false, addEventListener() {}, addListener() {} } }
   sandbox.window = sandbox
   vm.createContext(sandbox)
   /* 页面脚本异常必须输出 FAIL 而非裸崩（验收工具不能对坏页面静默失败） */
