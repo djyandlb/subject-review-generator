@@ -35,12 +35,12 @@ description: 网页构建。整合主题与架构：①调 ui-ux-pro-max 现搓�
 ### ② 架构（原 rv-web-builder）—— 模板为主
 
 **模式 A · 模板填充（编译网页的主方式，默认）**：
-1. 检测基础模板——**优先用主编排第 1 步已预置的 `xxx/data/sample/基础模板-复习页-v3.html`**（确认含 `<!-- RV-TEMPLATE -->` 且为 **v3 Soft UI**：`--elev-card` / `QUESTION_BANK` 六键）；若缺失，从家族根 `<review-page-skill>/samples/基础模板-复习页-v3.html`（或主编排 `./samples/`）复制；仅 v3 缺失时才回退旧 `基础模板-*.html`
+1. 检测基础模板——**优先用主编排第 1 步已预置的 `xxx/data/sample/基础模板-复习页-v3.html`**（确认含 `<!-- RV-TEMPLATE -->` 且为 **v3 Soft UI**：`--elev-card` / `QUESTION_BANK` 六键）；若缺失，从家族根 `<review-page-skill>/samples/基础模板-复习页-v3.html`（或主编排 `./samples/`）复制；v3 缺失即视为技能安装不完整，应重新执行 `install.sh` 恢复
 2. 识别结构：`KNOWLEDGE_CATEGORIES` + `QUESTION_BANK`（六键）、`:root` Soft UI elev/8pt、品牌占位 `{{学科名}}/{{副标题}}/{{学科图标}}`、交互契约见 `samples/TEMPLATE-v3.md`
 3. **确认 v3 副本已就位**；若不存在才从家族根/主编排 samples 复制
 4. **在副本上按需应用增强**（见下方「模板增强流程」）——**总体模板 `samples/` 永不改动**，保持干净 v3 骨架
 5. 返回副本模板路径 → 主编排第 9 步用 `fill-template.js` 注入数据
-6. **无模板时优先引导用模板**：提示可先由家族根 `<review-page-skill>/samples/generate-template.js` 从模板家族生成基础模板，而非直接走模块化
+6. **无模板时**：提示用户重新执行 `install.sh` 恢复 v3 模板；确认模板确实不可用时才走模式 B（模块化装配）
 
 **模板增强流程（防遗忘铁律）**：
 - **总体模板 = 永久干净空壳骨架**（无学科数据、无 btnEnhance）：默认 `samples/基础模板-复习页-v3.html`（v3 Soft UI）只含基础能力，**任何头脑风暴新增强都不许直接改它**，否则 JS 越积越多、模板越来越臃肿，其他学科被迫背上全部历史代码

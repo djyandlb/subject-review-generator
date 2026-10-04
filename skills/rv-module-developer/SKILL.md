@@ -32,7 +32,7 @@ description: 模块开发（成长型）。输入 /rv-module-developer + 模块�
    - **需求已被现有模块覆盖 → 直接启用，不新写**（选中写入 `data.json` 的 `config.modules` → assemble.js 自动应用）
    - 仅当需求**任何模块都覆盖不了** → 才进入下面的开发流程（写一次入库，以后直接复用）
    - **本 skill 的工作模式是「决策→复用」**：库里有就用库里的，永远不重复造轮子
-1. **先查复用**：读 `<同级skill:subject-review-generator>/modules/manifest.json` 注册表 + 家族根 `<review-page-skill>/samples/` 下的基础模板与成品网页（当前含 `基础模板-微生物学.html`、`微生物学与免疫学复习.html`，均含 `RV-TEMPLATE`/数据占位结构，是最大代码来源）是否已有可提取/改造的实现；能提取就不新写
+1. **先查复用**：读 `<同级skill:subject-review-generator>/modules/manifest.json` 注册表 + 家族根 `<review-page-skill>/samples/` 下的基础模板与成品网页（当前含 `基础模板-复习页-v3.html`，含 `RV-TEMPLATE`/数据占位结构，是最大代码来源）是否已有可提取/改造的实现；能提取就不新写
 2. **新写规范**：严格遵循接口
    ```js
    ;(function () {

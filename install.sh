@@ -30,17 +30,20 @@ echo "  源目录 : $REPO_DIR"
 echo "  目标   : $SKILL_DIR"
 echo "========================================"
 
+# 家族根源目录：docs 与 samples 的唯一数据源 = 主编排技能目录（仓库内不另存副本）
+FAMILY_SRC="$REPO_DIR/skills/subject-review-generator"
+
 # 0) 校验源完整性
-[ -f "$REPO_DIR/docs/GUARDRAILS.md" ] || { echo "错误：缺少 docs/GUARDRAILS.md，源不完整"; exit 1; }
-[ -d "$REPO_DIR/samples" ]           || { echo "错误：缺少 samples/ 目录，源不完整"; exit 1; }
-[ -d "$REPO_DIR/skills" ]            || { echo "错误：缺少 skills/ 目录，源不完整"; exit 1; }
+[ -f "$FAMILY_SRC/docs/GUARDRAILS.md" ] || { echo "错误：缺少 skills/subject-review-generator/docs/GUARDRAILS.md，源不完整"; exit 1; }
+[ -d "$FAMILY_SRC/samples" ]            || { echo "错误：缺少 skills/subject-review-generator/samples/，源不完整"; exit 1; }
+[ -d "$REPO_DIR/skills" ]               || { echo "错误：缺少 skills/ 目录，源不完整"; exit 1; }
 
 mkdir -p "$SKILL_DIR"
 
 # 1) 家族根：docs + samples（子技能按目录名 review-page-skill 向上查找，名称不可更改）
 mkdir -p "$SKILL_DIR/review-page-skill"
-cp -r "$REPO_DIR/docs"    "$SKILL_DIR/review-page-skill/"
-cp -r "$REPO_DIR/samples" "$SKILL_DIR/review-page-skill/"
+cp -r "$FAMILY_SRC/docs"    "$SKILL_DIR/review-page-skill/"
+cp -r "$FAMILY_SRC/samples" "$SKILL_DIR/review-page-skill/"
 echo "[1/3] 家族根    -> $SKILL_DIR/review-page-skill/  (docs + samples)"
 
 # 2) 12 个技能摊到顶层

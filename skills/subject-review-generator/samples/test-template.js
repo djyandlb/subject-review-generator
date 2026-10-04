@@ -1,4 +1,4 @@
-/* 验证「基础模板-微生物学.html」可独立运行：vm 沙箱执行模板 script（init → 渲染），检查不抛异常 */
+/* 验证模板网页可独立运行：vm 沙箱执行模板 script（init → 渲染），检查不抛异常 */
 'use strict'
 const fs = require('fs')
 const vm = require('vm')

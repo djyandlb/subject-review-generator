@@ -82,27 +82,18 @@
 
 ```
 subject-review-generator/
-├── docs/                    # 家族根 · 成长档案
-│   ├── GUARDRAILS.md        #   护栏清单（必守规则，执行前必读）
-│   ├── EVOLUTION.md         #   演进档案
-│   ├── plans/               #   实现计划
-│   └── specs/               #   设计规格
-├── samples/                 # 家族根 · 模板与示例
-│   ├── 基础模板-复习页-v3.html   #   默认模板（RV-TEMPLATE 标记）
-│   ├── TEMPLATE-v3.md           #   模板契约
-│   ├── 基础模板-微生物学.html    #   历史模板
-│   ├── 微生物学与免疫学复习.html  #   成品示例
-│   ├── generate-template.js     #   从成品网页反向生成模板
-│   ├── test-template.js         #   模板渲染测试
-│   └── data.json                #   示例数据
+├── README.md                # 项目说明
+├── install.sh               # 一键安装脚本
+├── .gitignore
+├── .gitattributes
 ├── skills/                  # 12 个技能本体
-│   ├── subject-review-generator/
+│   ├── subject-review-generator/     # 主编排
 │   │   ├── SKILL.md
 │   │   ├── modules/         #   19 个模块 + manifest.json
 │   │   ├── scripts/         #   assemble / fill-template / check-module / gen-manifest / list-modules
 │   │   ├── templates/       #   母版 frame.html + theme.css
-│   │   ├── docs/            #   （自包含副本）
-│   │   └── samples/         #   （自包含副本）
+│   │   ├── docs/            #   家族根数据源：GUARDRAILS / EVOLUTION / plans / specs
+│   │   └── samples/         #   家族根数据源：v3 模板 + 模板契约 + 示例数据 + 测试脚本
 │   ├── rv-doc-extractor/    #   含 scripts/：extract-any.py / clean-text.js / check-extraction.js 等
 │   ├── rv-data-builder/     #   含 scripts/：check-categories / check-enhance / check-explanation / dedup-questions / renumber-chapters
 │   ├── rv-content-refiner/  #   含 scripts/：export-content.js
@@ -110,8 +101,10 @@ subject-review-generator/
 │   ├── rv-verifier/         #   含 scripts/：test-boot.js / render-compare.js
 │   └── rv-quiz-designer/ rv-answer-verifier/ rv-polisher/ \
 │       rv-bundle-export/ rv-module-developer/ rv-updater/
-└── vendor/                  # 第三方依赖技能（随仓库分发）
+└── vendor/                  # 10 个第三方依赖技能
 ```
+
+> `docs/` 与 `samples/` 在仓库内只保留一份，位于主编排技能目录下。安装时由 `install.sh` 复制为家族根 `~/.claude/skills/review-page-skill/`，仓库中不另存副本。
 
 ---
 
@@ -132,7 +125,7 @@ subject-review-generator/
 | `doc-writer` | 文档排版辅助 | `rv-bundle-export` |
 | `code-review` | 代码审查 | `rv-module-developer`、`rv-polisher` |
 
-> `ui-ux-pro-max` 内含本地检索数据库，体积约 6 MB，为仓库体积的主要来源。
+> `ui-ux-pro-max` 内含本地检索数据库（约 3.5 MB），为仓库体积的主要来源。其上游包镜像目录 `src/` 与测试套件 `scripts/tests/` 已移除——运行时数据由 `scripts/core.py` 的 `DATA_DIR = Path(__file__).parent.parent / "data"` 指向顶层 `data/`，与 `src/` 无关。
 
 ---
 
@@ -254,9 +247,9 @@ RV.modules['模块名'] = { name, deps: [...], init(ctx), render(ctx) }
 
 | 路径 | 内容 |
 |------|------|
-| `docs/GUARDRAILS.md` | 护栏清单 |
-| `docs/EVOLUTION.md` | 演进档案 |
-| `docs/specs/2026-07-31-subject-review-generator-design.md` | 设计规格 |
-| `docs/plans/2026-07-31-subject-review-generator-implementation.md` | 实现计划 |
+| `skills/subject-review-generator/docs/GUARDRAILS.md` | 护栏清单 |
+| `skills/subject-review-generator/docs/EVOLUTION.md` | 演进档案 |
+| `skills/subject-review-generator/docs/specs/2026-07-31-subject-review-generator-design.md` | 设计规格 |
+| `skills/subject-review-generator/docs/plans/2026-07-31-subject-review-generator-implementation.md` | 实现计划 |
 | `skills/subject-review-generator/SKILL.md` | 主编排技能定义 |
-| `samples/TEMPLATE-v3.md` | v3 模板契约 |
+| `skills/subject-review-generator/samples/TEMPLATE-v3.md` | v3 模板契约 |
