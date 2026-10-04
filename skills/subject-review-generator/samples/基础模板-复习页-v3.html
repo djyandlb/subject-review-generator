@@ -129,7 +129,7 @@ img,svg{display:block}
   grid-area:header;display:flex;align-items:center;gap:12px;
   padding:0 16px 0 0;
   z-index:100;position:relative;color:var(--color-on-header);
-  background:#0f2744;
+  background:var(--color-header);
   box-shadow:var(--shadow-header);
 }
 .app-header::before{display:none}
@@ -194,7 +194,7 @@ img,svg{display:block}
     color var(--transition-fast),
     opacity var(--duration-fast) ease;
 }
-.search-trigger:hover{background:rgba(0,0,0,0.30);border-color:rgba(255,255,255,0.12);color:#fff}
+.search-trigger:hover{background:rgba(0,0,0,0.30);border-color:rgba(255,255,255,0.12);color:var(--color-on-header)}
 .search-glass-icon{
   position:absolute;left:11px;top:50%;transform:translateY(-50%);
   width:15px;height:15px;color:rgba(255,255,255,0.55);pointer-events:none;z-index:5;
@@ -229,7 +229,7 @@ img,svg{display:block}
   pointer-events:none;opacity:0;visibility:hidden;
   transition:opacity var(--duration-fast) ease,visibility 0s linear var(--duration-fast),background var(--transition-fast),color var(--transition-fast);
 }
-.header-search-wrap .search-clear:hover{background:rgba(255,255,255,0.10);color:#fff}
+.header-search-wrap .search-clear:hover{background:rgba(255,255,255,0.10);color:var(--color-on-header)}
 
 /* Trigger stays in-flow (reserves collapsed slot); panel grows to the right only */
 .header-search-wrap.expanded .search-trigger{opacity:0;pointer-events:none}
@@ -297,11 +297,11 @@ img,svg{display:block}
   color:rgba(255,255,255,0.86);background:transparent;border:none;box-shadow:none;
 }
 .btn-favorites:hover,.btn-quiz:hover{
-  background:rgba(255,255,255,0.10);border:none;box-shadow:none;color:#fff;
+  background:rgba(255,255,255,0.10);border:none;box-shadow:none;color:var(--color-on-header);
 }
 .btn-quiz:hover{background:rgba(255,255,255,0.18)}
 .btn-favorites.active{
-  color:#fff;background:var(--color-accent);border:none;box-shadow:none;
+  color:var(--color-on-header);background:var(--color-accent);border:none;box-shadow:none;
 }
 .header-chip-count{
   font-size:.66rem;font-weight:650;line-height:1;
