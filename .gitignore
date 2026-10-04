@@ -1,0 +1,26 @@
+# Python 缓存与字节码
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Node 依赖（本仓库脚本零依赖，此处仅作兜底）
+node_modules/
+npm-debug.log*
+
+# 编辑器与系统文件
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*~
+
+# 技能运行期产物（生成于用户资料文件夹，勿误提交）
+data/raw/
+data/processed/
+data/temporary/
+
+# 会话与临时标记
+*.star
+*.log
+*.tmp

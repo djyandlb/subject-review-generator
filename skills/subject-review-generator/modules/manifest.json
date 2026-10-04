@@ -1,0 +1,245 @@
+{
+  "schema": 1,
+  "updated": "2026-08-28",
+  "modules": {
+    "card-browser": {
+      "name": "card-browser",
+      "desc": "主区卡片流模块",
+      "deps": [
+        "favorites",
+        "mastery"
+      ],
+      "events": [
+        "nav:select",
+        "search:change",
+        "fav:change",
+        "mastery:change",
+        "view:change",
+        "concept:select",
+        "quiz:launch"
+      ],
+      "core": false,
+      "added": "2026-08-01"
+    },
+    "choice": {
+      "name": "choice",
+      "desc": "选择题模块（基于题库 single/multi）",
+      "deps": [
+        "card-browser"
+      ],
+      "events": [
+        "quiz:launch"
+      ],
+      "core": false,
+      "added": "2026-08-01"
+    },
+    "comparison": {
+      "name": "comparison",
+      "desc": "对比速查表模块（通用增强能力）",
+      "deps": [
+        "detail-panel"
+      ],
+      "events": [
+        "concept:select"
+      ],
+      "core": false,
+      "added": "2026-08-01"
+    },
+    "detail-panel": {
+      "name": "detail-panel",
+      "desc": "详情面板模块",
+      "deps": [
+        "favorites",
+        "mastery"
+      ],
+      "events": [
+        "concept:select"
+      ],
+      "core": false,
+      "added": "2026-08-01"
+    },
+    "duel": {
+      "name": "duel",
+      "desc": "鉴别挑战模块（通用增强能力）",
+      "deps": [
+        "card-browser"
+      ],
+      "events": [
+        "quiz:launch"
+      ],
+      "core": false,
+      "added": "2026-08-01"
+    },
+    "favorites": {
+      "name": "favorites",
+      "desc": "收藏模块",
+      "deps": [],
+      "events": [
+        "fav:toggle",
+        "fav:change",
+        "view:change"
+      ],
+      "core": false,
+      "added": "2026-08-01"
+    },
+    "flashcard": {
+      "name": "flashcard",
+      "desc": "速记卡模块（通用增强能力）",
+      "deps": [
+        "detail-panel"
+      ],
+      "events": [
+        "concept:select"
+      ],
+      "core": false,
+      "added": "2026-08-01"
+    },
+    "guess": {
+      "name": "guess",
+      "desc": "填空猜一猜模块",
+      "deps": [
+        "card-browser"
+      ],
+      "events": [
+        "quiz:launch"
+      ],
+      "core": false,
+      "added": "2026-08-01"
+    },
+    "lesion-card": {
+      "name": "lesion-card",
+      "desc": "结构卡模块（通用增强能力）",
+      "deps": [
+        "detail-panel"
+      ],
+      "events": [
+        "concept:select"
+      ],
+      "core": false,
+      "added": "2026-08-28"
+    },
+    "mastery": {
+      "name": "mastery",
+      "desc": "掌握度模块（三档：掌握/熟悉/了解）",
+      "deps": [],
+      "events": [],
+      "core": false,
+      "added": "2026-08-01"
+    },
+    "navigation": {
+      "name": "navigation",
+      "desc": "侧边栏导航模块",
+      "deps": [
+        "favorites"
+      ],
+      "events": [
+        "view:change",
+        "fav:change",
+        "wrong:change",
+        "nav:select"
+      ],
+      "core": false,
+      "added": "2026-08-01"
+    },
+    "quiz": {
+      "name": "quiz",
+      "desc": "互猜自测模块（双向随机）",
+      "deps": [
+        "card-browser"
+      ],
+      "events": [
+        "quiz:launch",
+        "answer:correct",
+        "answer:wrong"
+      ],
+      "core": false,
+      "added": "2026-08-01"
+    },
+    "rv-core": {
+      "name": "rv-core",
+      "desc": "模块运行时核心（所有模块的地基，恒选中）",
+      "deps": [],
+      "events": [
+        "view:change"
+      ],
+      "core": true,
+      "added": "2026-08-01"
+    },
+    "search": {
+      "name": "search",
+      "desc": "搜索模块",
+      "deps": [],
+      "events": [
+        "view:change",
+        "search:change"
+      ],
+      "core": false,
+      "added": "2026-08-01"
+    },
+    "selfcheck": {
+      "name": "selfcheck",
+      "desc": "简答自测模块",
+      "deps": [
+        "card-browser"
+      ],
+      "events": [
+        "quiz:launch"
+      ],
+      "core": false,
+      "added": "2026-08-01"
+    },
+    "stage-timeline": {
+      "name": "stage-timeline",
+      "desc": "分期时间轴模块（通用增强能力）",
+      "deps": [
+        "detail-panel"
+      ],
+      "events": [
+        "concept:select"
+      ],
+      "core": false,
+      "added": "2026-08-28"
+    },
+    "tree": {
+      "name": "tree",
+      "desc": "分类树/流程模块（通用增强能力）",
+      "deps": [
+        "detail-panel"
+      ],
+      "events": [
+        "concept:select"
+      ],
+      "core": false,
+      "added": "2026-08-01"
+    },
+    "truefalse": {
+      "name": "truefalse",
+      "desc": "判断题模块（基于题库 tf）",
+      "deps": [
+        "card-browser"
+      ],
+      "events": [
+        "quiz:launch"
+      ],
+      "core": false,
+      "added": "2026-08-01"
+    },
+    "wrongbook": {
+      "name": "wrongbook",
+      "desc": "错题本模块",
+      "deps": [
+        "favorites",
+        "card-browser"
+      ],
+      "events": [
+        "answer:wrong",
+        "wrong:change",
+        "answer:correct",
+        "view:change",
+        "concept:select"
+      ],
+      "core": false,
+      "added": "2026-08-01"
+    }
+  }
+}

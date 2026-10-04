@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>/*__RV_TITLE__*/</title>
+<style>
+/*__RV_THEME__*/
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- 标题栏：品牌 + 展开式搜索位 + 操作区 + 汉堡菜单 -->
+  <header class="app-header" id="appHeader">
+    <button class="btn-hamburger" id="btnHamburger" aria-label="菜单">☰</button>
+    <div class="header-brand"><span class="brand-icon">📚</span><span class="brand-name" id="brandName"></span></div>
+    <div class="header-search-wrap" id="searchWrap"></div>
+    <div class="header-actions" id="headerActions"></div>
+  </header>
+
+  <!-- 左栏：分类树（移动端抽屉） -->
+  <nav class="app-sidebar" id="appSidebar"></nav>
+  <div class="sidebar-mask" id="sidebarMask"></div>
+
+  <!-- 主区：卡片流 / 刷题视图 -->
+  <main class="app-main" id="appMain"></main>
+
+  <!-- 右栏：详情面板（移动端全屏/底部条） -->
+  <aside class="app-detail" id="appDetail">
+    <div class="app-detail-header" id="detailHeader">
+      <div class="app-detail-title" id="detailTitle"></div>
+      <div class="app-detail-actions" id="detailActions"></div>
+      <button class="app-detail-close" id="detailClose" aria-label="关闭">×</button>
+    </div>
+    <div class="app-detail-body" id="detailBody"></div>
+  </aside>
+  <div class="app-detail-footer" id="detailFooter"></div>
+</div>
+
+<script>
+/*__RV_DATA__*/
+</script>
+<script>
+/*__RV_MODULES__*/
+</script>
+<script>
+/* 启动：填充学科名 → boot 装配模块 */
+document.addEventListener('DOMContentLoaded', function () {
+  var data = window.RV_DATA || { subject: '', categories: [], questions: [], config: {} }
+  document.getElementById('brandName').textContent = data.subject
+  RV.boot(data)
+})
+</script>
+</body>
+</html>

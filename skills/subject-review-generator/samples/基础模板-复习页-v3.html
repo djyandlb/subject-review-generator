@@ -1,0 +1,2508 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{学科名}} {{副标题}}</title>
+<!-- RV-TEMPLATE: 基础单文件模板 v3 Soft UI | 数据: KNOWLEDGE_CATEGORIES + QUESTION_BANK(六键) | 配色: :root Soft UI elev/8pt | 品牌: {{学科名}}/{{副标题}}/{{学科图标}} | 交互: 筛选轨+卡片渐隐错峰 | 进度: STORAGE_PROGRESS -->
+<style>
+/* ============================================================
+   RV-TEMPLATE visual v3.3 — Dimensional Layering (scoped)
+   Quiet page bg; strong Soft UI elev only on cards / panels / modals
+   Contracts: class/id + :root keys + .btn-quiz:hover{background:rgba(255,255,255,0.18)}
+   Switch: opacity. Hover: soft lift. No page-wide DOF glow.
+   ============================================================ */
+:root{
+  --bg-page:#dde4ef;
+  --bg-card:#ffffff;
+  --bg-card-hover:#fcfdff;
+  --text-main:#0f172a;
+  --text-light:#334155;
+  --text-muted:#64748b;
+  --color-primary:#1e3a5f;
+  --color-accent:#2563eb;
+  --color-header:#0f2744;
+  --color-correct:#059669;
+  --color-wrong:#dc2626;
+  --color-master:#b91c1c;
+  --color-familiar:#b45309;
+  --color-understand:#2563eb;
+  --font-heading:'Noto Serif SC','Source Han Serif SC','Songti SC',Georgia,serif;
+  --font-body:'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Segoe UI',sans-serif;
+  --sidebar-width:256px;
+  --radius-sm:10px;
+  --radius-md:14px;
+  --radius-lg:18px;
+  /* Shell: quiet single-light. Cards: full Soft UI dual-shadow (scoped). */
+  --elev-1:0 1px 2px rgba(15,39,68,0.06),0 2px 6px rgba(15,39,68,0.07);
+  --elev-2:0 2px 4px rgba(15,39,68,0.06),0 8px 18px rgba(15,39,68,0.10);
+  --elev-3:0 6px 14px rgba(15,39,68,0.08),0 18px 40px rgba(15,39,68,0.14);
+  --elev-4:0 12px 28px rgba(15,39,68,0.14),0 28px 56px rgba(15,39,68,0.18);
+  --elev-card:
+    -3px -4px 10px rgba(255,255,255,0.95),
+    3px 6px 14px rgba(15,39,68,0.10),
+    0 14px 28px rgba(15,39,68,0.10);
+  --elev-card-hover:
+    -2px -3px 8px rgba(255,255,255,1),
+    4px 12px 24px rgba(15,39,68,0.12),
+    0 22px 44px rgba(37,99,235,0.14);
+  --shadow-card:var(--elev-card);
+  --shadow-card-hover:var(--elev-card-hover);
+  --transition-fast:150ms var(--ease);
+  --transition-normal:220ms var(--ease);
+  --transition-slow:300ms var(--ease);
+  --color-border:#c0cddc;
+  --color-border-soft:#d4dee9;
+  --bg-sidebar:#f4f7fb;
+  --bg-soft:#eef2f7;
+  --header-rgb:15, 39, 68;
+  --accent-rgb:37, 99, 235;
+  --color-on-header:#fff;
+  --color-correct-bg:#ecfdf5;
+  --color-wrong-bg:#fef2f2;
+  --color-master-bg:#fef2f2;
+  --color-familiar-bg:#fffbeb;
+  --color-understand-bg:#eff6ff;
+  --color-hint-bg:#fffbeb;
+  --color-star:#eab308;
+  --color-correct-text:#047857;
+  --color-wrong-text:#b91c1c;
+  --space-1:4px;
+  --space-2:8px;
+  --space-3:12px;
+  --space-4:16px;
+  --space-5:24px;
+  --ease:cubic-bezier(0.25,0.1,0.25,1);
+  --ease-spring:cubic-bezier(0.22,1,0.36,1);
+  --ease-out:cubic-bezier(0.16,1,0.3,1);
+  --ease-soft:var(--ease);
+  --duration-fast:150ms;
+  --duration-normal:220ms;
+  --duration-slow:300ms;
+  --header-height:56px;
+  --detail-width:340px;
+  --control-h:34px;
+  --focus-ring:0 0 0 3px rgba(var(--accent-rgb),0.24);
+  --shadow-header:0 1px 0 rgba(255,255,255,0.10) inset,0 8px 24px rgba(var(--header-rgb),0.32);
+  --shadow-modal:var(--elev-4);
+  --bg-page-glow:transparent;
+  --bg-page-glow-2:transparent;
+  --surface-shine:linear-gradient(180deg,rgba(255,255,255,0.9),rgba(255,255,255,0));
+  --active-bg:rgba(var(--accent-rgb),0.10);
+  --hover-bg:rgba(var(--accent-rgb),0.055);
+  --active-ring:inset 0 0 0 1.5px rgba(var(--accent-rgb),0.22);
+  --inset-highlight:inset 0 1px 0 rgba(255,255,255,0.9);
+  --soft-edge:0 0 0 1px rgba(15,39,68,0.06);
+  --panel-edge:0 0 0 1px rgba(15,39,68,0.05);
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{font-size:16px;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+body{
+  font-family:var(--font-body);color:var(--text-main);line-height:1.5;min-height:100vh;letter-spacing:0.005em;
+  background-color:var(--bg-page);
+  background-image:linear-gradient(180deg,#e8edf5 0%,var(--bg-page) 100%);
+  background-attachment:fixed;
+}
+::selection{background:rgba(var(--accent-rgb),0.16);color:var(--text-main)}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+button:focus-visible,input:focus-visible,.mastery-tag:focus-visible,.question-option:focus-visible,.sidebar-qtab:focus-visible,.sidebar-subcategory:focus-visible{outline:none;box-shadow:var(--focus-ring)}
+ul,ol{list-style:none}
+img,svg{display:block}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(var(--header-rgb),0.18);border-radius:999px}
+::-webkit-scrollbar-thumb:hover{background:rgba(var(--header-rgb),0.3)}
+*{scrollbar-width:thin;scrollbar-color:rgba(15,39,68,0.22) transparent}
+
+.app{
+  display:grid;
+  grid-template-columns:var(--sidebar-width) 1fr var(--detail-width);
+  grid-template-rows:var(--header-height) minmax(0,1fr);
+  grid-template-areas:"header header header" "sidebar main detail";
+  height:100vh;height:100dvh;overflow:hidden;
+}
+
+/* Header — (brand + collapsed search) = sidebar width | equal action buttons */
+.app-header{
+  grid-area:header;display:flex;align-items:center;gap:12px;
+  padding:0 16px 0 0;
+  z-index:100;position:relative;color:var(--color-on-header);
+  background:#0f2744;
+  box-shadow:var(--shadow-header);
+}
+.app-header::before{display:none}
+.app-header::after{
+  content:'';position:absolute;left:0;right:0;bottom:0;height:1px;z-index:1;
+  background:rgba(255,255,255,0.08);
+}
+.app-header > *{position:relative;z-index:2}
+
+/* Brand + collapsed search share exactly one sidebar column */
+.header-lead{
+  display:flex;align-items:center;gap:8px;flex-shrink:0;min-width:0;
+  width:var(--sidebar-width);box-sizing:border-box;
+  padding:0 12px 0 16px;overflow:visible;
+}
+.header-left{
+  display:flex;align-items:center;gap:8px;min-width:0;flex:1 1 auto;overflow:hidden;
+  width:auto;padding:0;
+}
+.header-center{display:flex;justify-content:flex-end;align-items:center;min-width:0;flex:0 0 auto}
+.header-brand{
+  display:flex;align-items:center;gap:8px;min-width:0;overflow:hidden;width:100%;
+}
+.header-brand .brand-icon{
+  flex-shrink:0;width:36px;height:36px;
+  display:inline-flex;align-items:center;justify-content:center;
+  border-radius:8px;font-size:1.2rem;line-height:1;
+  background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.06);
+  box-shadow:none;filter:none;
+}
+.header-brand .brand-text{
+  display:flex;flex-direction:column;align-items:flex-start;justify-content:center;
+  gap:1px;min-width:0;overflow:hidden;flex:1;
+}
+.header-brand .brand-title{
+  font-family:var(--font-heading);font-size:1.02rem;font-weight:700;letter-spacing:.02em;
+  line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;
+}
+.header-brand .brand-accent{
+  font-family:var(--font-body);font-size:.68rem;font-weight:500;letter-spacing:.04em;
+  color:rgba(186,214,247,0.72);line-height:1.2;white-space:nowrap;
+}
+
+/* Search — Codrops / industry pattern:
+   animate interpolable px widths (not auto↔px); transition on default rule;
+   overflow:hidden reveals field; expand RIGHT from collapsed slot (brand stays). */
+.header-search-wrap{
+  --search-collapsed:80px;
+  --search-expanded:220px;
+  position:relative;display:flex;align-items:center;
+  width:auto;height:36px;flex-shrink:0;z-index:3;
+}
+.search-trigger{
+  position:relative;z-index:2;display:inline-flex;align-items:center;gap:6px;
+  width:auto;height:36px;padding:0 12px 0 34px;border-radius:8px;box-sizing:border-box;
+  border:1px solid rgba(255,255,255,0.06);background:rgba(0,0,0,0.22);
+  color:rgba(255,255,255,0.78);font-size:.78rem;font-weight:500;line-height:1;
+  cursor:pointer;white-space:nowrap;
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast),
+    opacity var(--duration-fast) ease;
+}
+.search-trigger:hover{background:rgba(0,0,0,0.30);border-color:rgba(255,255,255,0.12);color:#fff}
+.search-glass-icon{
+  position:absolute;left:11px;top:50%;transform:translateY(-50%);
+  width:15px;height:15px;color:rgba(255,255,255,0.55);pointer-events:none;z-index:5;
+}
+/* Morphing panel: left-anchored, numeric width both states → springs right */
+.search-input-inner{
+  position:absolute;left:0;top:0;display:flex;align-items:center;
+  width:var(--search-collapsed);height:36px;
+  overflow:hidden;pointer-events:none;box-sizing:border-box;
+  transition:
+    width var(--duration-slow) var(--ease-spring),
+    box-shadow var(--transition-fast);
+}
+.header-search-wrap input{
+  flex:1 1 auto;min-width:0;width:100%;height:36px;
+  padding:0 12px 0 34px;border-radius:8px;box-sizing:border-box;
+  border:1px solid rgba(255,255,255,0.06);background:rgba(0,0,0,0.22);
+  color:transparent;font:inherit;font-size:.8125rem;font-weight:500;line-height:1;outline:none;
+  opacity:0;pointer-events:none;white-space:nowrap;
+  transition:
+    opacity var(--duration-fast) ease,
+    color 0s linear 0s,
+    border-color var(--transition-normal),
+    background var(--transition-normal),
+    padding var(--duration-slow) var(--ease-spring),
+    box-shadow var(--transition-fast);
+}
+.header-search-wrap input::placeholder{color:transparent;transition:color var(--duration-fast) ease}
+.header-search-wrap .search-clear{
+  width:22px;height:22px;border-radius:6px;display:flex;align-items:center;justify-content:center;
+  color:rgba(255,255,255,0.7);font-size:.72rem;flex-shrink:0;margin-left:-28px;z-index:4;
+  pointer-events:none;opacity:0;visibility:hidden;
+  transition:opacity var(--duration-fast) ease,visibility 0s linear var(--duration-fast),background var(--transition-fast),color var(--transition-fast);
+}
+.header-search-wrap .search-clear:hover{background:rgba(255,255,255,0.10);color:#fff}
+
+/* Trigger stays in-flow (reserves collapsed slot); panel grows to the right only */
+.header-search-wrap.expanded .search-trigger{opacity:0;pointer-events:none}
+.header-search-wrap.expanded .search-input-inner{
+  width:var(--search-expanded);pointer-events:auto;
+  box-shadow:0 0 0 3px rgba(37,99,235,0.14);
+}
+.header-search-wrap.expanded input{
+  padding:0 34px 0 36px;opacity:1;pointer-events:auto;
+  border-color:rgba(147,197,253,0.28);color:rgba(255,255,255,0.92);background:rgba(0,0,0,0.32);
+  transition:
+    opacity var(--duration-fast) ease .08s,
+    color 0s linear .12s,
+    border-color var(--transition-normal),
+    background var(--transition-normal),
+    padding var(--duration-slow) var(--ease-spring),
+    box-shadow var(--transition-fast);
+}
+.header-search-wrap.expanded input::placeholder{color:rgba(255,255,255,0.38)}
+.header-search-wrap.expanded input:focus{
+  background:rgba(0,0,0,0.36);border-color:rgba(147,197,253,0.4);
+  box-shadow:0 0 0 3px rgba(37,99,235,0.18);
+}
+.header-search-wrap.expanded .search-input-inner:focus-within{
+  box-shadow:0 0 0 3px rgba(37,99,235,0.18);
+}
+.header-search-wrap.expanded .search-clear{
+  opacity:1;visibility:visible;pointer-events:auto;
+  transition:opacity var(--duration-fast) ease .12s,visibility 0s linear 0s,background var(--transition-fast),color var(--transition-fast);
+}
+.header-search-wrap.expanded .search-clear.hidden{
+  opacity:0;visibility:hidden;pointer-events:none;
+  transition:opacity var(--duration-fast) ease,visibility 0s linear var(--duration-fast);
+}
+.search-trigger .search-trigger-text{white-space:nowrap}
+@media (prefers-reduced-motion:reduce){
+  .search-input-inner,
+  .header-search-wrap input,
+  .header-search-wrap .search-clear,
+  .search-trigger{
+    transition-duration:0.01ms !important;
+  }
+}
+
+.header-actions{
+  display:inline-flex;align-items:center;justify-content:center;
+  margin-left:auto;flex-shrink:0;height:36px;box-sizing:border-box;
+  gap:0;padding:3px;border-radius:8px;
+  background:rgba(0,0,0,0.22);border:1px solid rgba(255,255,255,0.06);
+}
+.header-actions-sep{
+  width:1px;height:16px;margin:0;flex-shrink:0;background:rgba(255,255,255,0.12);
+}
+.btn-icon{
+  display:inline-flex;align-items:center;justify-content:center;gap:5px;
+  width:104px;height:30px;min-width:104px;max-width:104px;padding:0;
+  border-radius:6px;border:none;background:transparent;
+  font-size:.78rem;font-weight:500;line-height:1;white-space:nowrap;color:rgba(255,255,255,0.86);
+  box-shadow:none;box-sizing:border-box;flex:0 0 104px;overflow:hidden;
+  transition:background var(--transition-fast),color var(--transition-fast);
+}
+.btn-icon:active{opacity:.9}
+.btn-favorites,.btn-quiz{
+  width:104px;height:30px;min-width:104px;max-width:104px;flex:0 0 104px;
+  color:rgba(255,255,255,0.86);background:transparent;border:none;box-shadow:none;
+}
+.btn-favorites:hover,.btn-quiz:hover{
+  background:rgba(255,255,255,0.10);border:none;box-shadow:none;color:#fff;
+}
+.btn-quiz:hover{background:rgba(255,255,255,0.18)}
+.btn-favorites.active{
+  color:#fff;background:var(--color-accent);border:none;box-shadow:none;
+}
+.header-chip-count{
+  font-size:.66rem;font-weight:650;line-height:1;
+  min-width:16px;padding:2px 6px;border-radius:999px;text-align:center;
+  background:rgba(255,255,255,0.12);border:none;
+}
+.btn-favorites.active .header-chip-count{background:rgba(255,255,255,0.22)}
+.btn-hamburger{
+  display:none;align-items:center;justify-content:center;
+  width:36px;height:36px;padding:0;border-radius:8px;border:none;flex-shrink:0;
+  color:var(--color-on-header);background:rgba(255,255,255,0.06);
+  transition:background var(--transition-fast);
+}
+.btn-hamburger:hover{background:rgba(255,255,255,0.12)}
+
+.app-sidebar{
+  grid-area:sidebar;display:flex;flex-direction:column;z-index:2;position:relative;
+  min-height:0;max-height:100%;
+  background:linear-gradient(180deg,#fafbfd 0%,var(--bg-sidebar) 100%);
+  border-right:1px solid var(--color-border-soft);
+  box-shadow:8px 0 28px rgba(var(--header-rgb),0.10);
+  overflow-x:hidden;overflow-y:auto;
+  overscroll-behavior:contain;
+  padding:var(--space-3) 0 var(--space-4);
+  scrollbar-width:thin;scrollbar-color:rgba(var(--header-rgb),0.22) transparent;
+}
+.app-main{min-height:0;grid-area:main;padding:var(--space-4) var(--space-5) var(--space-5);overflow-y:auto;
+  background:transparent;z-index:1;position:relative;}
+.app-detail{min-height:0;grid-area:detail;display:flex;flex-direction:column;overflow-y:auto;position:relative;z-index:2;
+  background:linear-gradient(180deg,#fafbfd 0%,var(--bg-sidebar) 100%);
+  border-left:1px solid var(--color-border-soft);
+  box-shadow:-8px 0 28px rgba(var(--header-rgb),0.10);
+  padding:0;
+  box-sizing:border-box;}
+.app-detail::before{display:none}
+
+.sidebar-mode-toggle{
+  display:flex;margin:0 var(--space-4) var(--space-4);padding:4px;flex-shrink:0;
+  background:rgba(var(--header-rgb),0.06);border-radius:999px;border:1px solid var(--color-border-soft);
+  box-shadow:inset 0 2px 4px rgba(var(--header-rgb),0.06);
+}
+.sidebar-mode-btn{
+  flex:1;padding:var(--space-2) var(--space-1);border-radius:999px;font-size:.78rem;font-weight:600;text-align:center;
+  color:var(--text-muted);transition:color var(--transition-fast),background var(--transition-fast),box-shadow var(--transition-fast);
+}
+.sidebar-mode-btn:hover{color:var(--text-light)}
+.sidebar-mode-btn.active{background:var(--bg-card);color:var(--color-primary);box-shadow:var(--elev-1)}
+.sidebar-mode-btn.knowledge-mode-btn.active{color:var(--color-accent)}
+
+.sidebar-heading{
+  font-size:.66rem;font-weight:650;color:var(--text-muted);
+  letter-spacing:.07em;text-transform:uppercase;
+  padding:0 0 var(--space-2);margin:0;
+}
+
+#sidebarTree,
+.sidebar-question-tabs{
+  display:flex;flex-direction:column;gap:var(--space-2);
+  padding:0 var(--space-4) var(--space-4);
+  box-sizing:border-box;
+  flex:0 0 auto;min-width:0;
+  overflow:visible;
+}
+/* Chapter blocks — soft elevated surfaces, nested well when expanded */
+.sidebar-category{
+  margin:0;border-radius:var(--radius-md);overflow:hidden;
+  background:var(--bg-card);
+  border:1px solid var(--color-border-soft);
+  box-shadow:var(--elev-1);
+  transition:border-color var(--transition-fast),box-shadow var(--transition-fast),background var(--transition-fast);
+}
+.sidebar-category:hover{
+  border-color:rgba(var(--header-rgb),0.12);
+  box-shadow:var(--elev-2);
+}
+.sidebar-category.expanded{
+  border-color:rgba(var(--accent-rgb),0.16);
+  box-shadow:var(--elev-2);
+}
+.sidebar-category.active{
+  border-color:rgba(var(--accent-rgb),0.28);
+  background:linear-gradient(180deg,#ffffff 0%,#f5f8fc 100%);
+  box-shadow:var(--elev-2),0 0 0 1px rgba(var(--accent-rgb),0.06);
+}
+.sidebar-category-header{
+  display:flex;align-items:flex-start;padding:10px 12px;gap:var(--space-2);cursor:pointer;user-select:none;
+  border-radius:0;transition:background var(--transition-fast);
+}
+.sidebar-category-header:hover{background:rgba(var(--accent-rgb),0.04)}
+.sidebar-category.expanded .sidebar-category-header{
+  background:rgba(var(--header-rgb),0.025);
+  border-bottom:1px solid var(--color-border-soft);
+}
+.sidebar-arrow{
+  width:12px;font-size:.5rem;color:var(--text-muted);flex-shrink:0;text-align:center;
+  margin-top:8px;
+  transition:transform var(--transition-slow),color var(--transition-fast);
+}
+.sidebar-category.expanded .sidebar-arrow{transform:rotate(90deg);color:var(--color-accent)}
+.sidebar-category-info{display:flex;align-items:flex-start;gap:var(--space-2);flex:1;min-width:0}
+.sidebar-icon{
+  width:28px;height:28px;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;
+  border-radius:8px;font-size:.85rem;line-height:1;margin-top:1px;
+  background:rgba(var(--header-rgb),0.05);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,0.7);
+  transition:background var(--transition-fast);
+}
+.sidebar-category.expanded .sidebar-icon,
+.sidebar-category.active .sidebar-icon{background:rgba(var(--accent-rgb),0.10)}
+.sidebar-name{
+  flex:1;min-width:0;font-size:.82rem;font-weight:500;color:var(--text-main);
+  line-height:1.35;white-space:normal;overflow:hidden;word-break:break-word;
+  display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;
+}
+.sidebar-category.active .sidebar-name{font-weight:650;color:var(--color-primary)}
+.sidebar-count{
+  font-size:.62rem;font-weight:650;color:var(--text-muted);margin-top:4px;
+  background:var(--bg-soft);padding:2px 8px;border-radius:999px;flex-shrink:0;
+  border:1px solid var(--color-border-soft);line-height:1.2;
+}
+.sidebar-category.active .sidebar-count{
+  color:var(--color-accent);background:rgba(var(--accent-rgb),0.08);border-color:rgba(var(--accent-rgb),0.16);
+}
+
+.sidebar-subcategories{
+  overflow:hidden;max-height:0;padding:0 6px;opacity:0;
+  background:rgba(var(--header-rgb),0.035);
+  box-shadow:inset 0 2px 6px rgba(var(--header-rgb),0.04);
+  transition:max-height 360ms var(--ease),padding var(--transition-slow),opacity 200ms var(--ease);
+}
+/* Unbounded when open — fixed 640px clipped wrapped titles / many nodes */
+.sidebar-category.expanded .sidebar-subcategories{
+  max-height:2400px;padding:6px 6px 8px;opacity:1;overflow:visible;
+}
+.sidebar-subcategory{
+  display:flex;align-items:flex-start;margin:2px 0;padding:8px 10px 8px 12px;gap:var(--space-2);
+  font-size:.78rem;cursor:pointer;border-radius:var(--radius-sm);color:var(--text-light);
+  border:1px solid transparent;line-height:1.4;
+  transition:background var(--transition-fast),color var(--transition-fast),box-shadow var(--transition-fast),border-color var(--transition-fast);
+}
+.sidebar-subcategory > span{
+  flex:1;min-width:0;white-space:normal;word-break:break-word;overflow-wrap:anywhere;
+}
+.sidebar-subcategory:hover{background:rgba(255,255,255,0.7);color:var(--color-primary);border-color:rgba(var(--header-rgb),0.06)}
+.sidebar-subcategory.active{
+  background:var(--bg-card);color:var(--color-accent);font-weight:600;
+  border-color:rgba(var(--accent-rgb),0.16);
+  box-shadow:var(--elev-1),inset 2px 0 0 0 var(--color-accent);
+}
+
+
+.sidebar-qtab{
+  display:flex;align-items:center;gap:14px;
+  min-height:56px;height:56px;padding:0 16px;box-sizing:border-box;
+  border-radius:var(--radius-md);font-size:.84rem;cursor:pointer;
+  background:var(--bg-card);border:1px solid var(--color-border-soft);box-shadow:var(--elev-1);
+  transition:background var(--transition-fast),color var(--transition-fast),box-shadow var(--transition-fast),border-color var(--transition-fast);
+}
+.sidebar-qtab:hover{border-color:rgba(var(--header-rgb),0.12);box-shadow:var(--elev-2)}
+.sidebar-qtab.active{
+  color:var(--color-accent);font-weight:600;
+  border-color:rgba(var(--accent-rgb),0.28);
+  background:linear-gradient(180deg,#ffffff 0%,#f5f8fc 100%);
+  box-shadow:var(--elev-2),inset 3px 0 0 0 var(--color-accent);
+}
+.sidebar-qtab .qtab-icon{
+  width:34px;height:34px;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;
+  border-radius:10px;font-size:1.05rem;line-height:1;
+  background:rgba(var(--header-rgb),0.05);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,0.7);
+}
+.sidebar-qtab.active .qtab-icon{background:rgba(var(--accent-rgb),0.10)}
+.sidebar-qtab .qtab-label{
+  flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  font-weight:500;color:var(--text-main);line-height:1.2;
+}
+.sidebar-qtab.active .qtab-label{color:var(--color-accent);font-weight:650}
+.sidebar-qtab .qtab-count{
+  font-size:.7rem;font-weight:650;margin-left:auto;flex-shrink:0;
+  min-width:30px;height:26px;padding:0 10px;border-radius:999px;
+  display:inline-flex;align-items:center;justify-content:center;
+  background:var(--bg-soft);border:1px solid var(--color-border-soft);color:var(--text-muted);
+  box-sizing:border-box;line-height:1;
+}
+.sidebar-qtab.active .qtab-count{
+  color:var(--color-accent);background:rgba(var(--accent-rgb),0.08);border-color:rgba(var(--accent-rgb),0.16);
+}
+.sidebar-qtab.sidebar-wrongbook{
+  margin-top:4px;
+}
+.sidebar-qtab.sidebar-wrongbook .qtab-count.has-wrong{
+  background:#fdecea;color:var(--color-wrong);border-color:rgba(220,38,38,0.18);
+}
+.sidebar-qtab-sep{
+  height:1px;margin:8px 4px 6px;border:none;
+  background:linear-gradient(90deg,transparent,var(--color-border-soft) 12%,var(--color-border-soft) 88%,transparent);
+  flex-shrink:0;
+}
+
+.sidebar-mobile-header{
+  display:none;align-items:center;justify-content:space-between;padding:var(--space-3) var(--space-4);
+  background:var(--color-header);color:var(--color-on-header);
+}
+.sidebar-mobile-title{font-family:var(--font-heading);font-size:.92rem;font-weight:600}
+.sidebar-mobile-close{
+  width:30px;height:30px;display:flex;align-items:center;justify-content:center;
+  border-radius:50%;color:var(--color-on-header);transition:background var(--transition-fast);
+}
+.sidebar-mobile-close:hover{background:rgba(255,255,255,0.14)}
+.sidebar-overlay{display:none;position:fixed;inset:0;z-index:90;background:rgba(var(--header-rgb),0.32);backdrop-filter:blur(6px)}
+.sidebar-overlay.show{display:block;animation:fade-in var(--duration-normal) var(--ease)}
+.detail-overlay{display:none;position:fixed;inset:0;z-index:94;background:rgba(var(--header-rgb),0.32);backdrop-filter:blur(6px)}
+
+.main-header{
+  display:flex;align-items:flex-end;justify-content:space-between;
+  margin-bottom:var(--space-3);flex-wrap:wrap;gap:var(--space-3);
+}
+.main-title{font-family:var(--font-heading);font-size:1.22rem;font-weight:700;color:var(--color-primary);line-height:1.2;letter-spacing:.01em;text-shadow:0 1px 0 rgba(255,255,255,0.6)}
+.main-subtitle{font-size:.8rem;color:var(--text-muted);margin-top:2px}
+
+/* Mastery filters — one Soft UI rail; segments flush (round ends only) */
+.mastery-filters{
+  position:relative;
+  display:inline-flex;align-items:stretch;flex-wrap:nowrap;gap:0;
+  padding:3px;border-radius:var(--radius-md);
+  background:rgba(255,255,255,0.55);
+  border:1px solid rgba(255,255,255,0.9);
+  box-shadow:var(--elev-1),inset 0 1px 0 rgba(255,255,255,0.85);
+}
+.mastery-pill{
+  position:absolute;top:3px;bottom:3px;left:0;z-index:0;
+  width:0;border-radius:calc(var(--radius-md) - 2px);
+  background:#fff;
+  box-shadow:
+    -1px -1px 3px rgba(255,255,255,0.95),
+    1px 2px 6px rgba(15,39,68,0.10),
+    0 0 0 1px rgba(15,39,68,0.04);
+  opacity:0;pointer-events:none;
+  transition:transform 240ms var(--ease-out),width 240ms var(--ease-out),opacity 160ms var(--ease);
+  will-change:transform,width;
+}
+.mastery-tag{
+  position:relative;overflow:hidden;z-index:1;
+  display:inline-flex;align-items:center;justify-content:center;
+  height:30px;padding:0 14px;margin:0;
+  border:0;border-radius:0;
+  background:transparent;box-shadow:none;
+  font-size:.74rem;font-weight:550;letter-spacing:.02em;line-height:1;
+  color:var(--text-muted);cursor:pointer;
+  transition:color var(--transition-fast),background var(--transition-fast);
+}
+.mastery-tag:first-of-type{border-radius:calc(var(--radius-md) - 2px) 0 0 calc(var(--radius-md) - 2px)}
+.mastery-tag:last-of-type{border-radius:0 calc(var(--radius-md) - 2px) calc(var(--radius-md) - 2px) 0}
+.mastery-tag:only-of-type{border-radius:calc(var(--radius-md) - 2px)}
+.mastery-tag + .mastery-tag::after{
+  content:'';position:absolute;left:0;top:22%;bottom:22%;width:1px;z-index:0;
+  background:rgba(15,39,68,0.08);pointer-events:none;
+  transition:opacity var(--transition-fast);
+}
+.mastery-tag.active + .mastery-tag::after,
+.mastery-tag.active::after{opacity:0}
+.mastery-tag.mastery-zhangwo,
+.mastery-tag.mastery-shuxi,
+.mastery-tag.mastery-lejie{padding-left:22px;padding-right:14px}
+.mastery-tag.mastery-zhangwo::before,
+.mastery-tag.mastery-shuxi::before,
+.mastery-tag.mastery-lejie::before{
+  content:'';position:absolute;top:0;bottom:0;left:7px;z-index:0;
+  display:block;pointer-events:none;background-repeat:no-repeat;opacity:.4;
+  transition:opacity var(--transition-fast);
+}
+.mastery-tag.mastery-zhangwo::before{
+  width:15px;
+  background-image:
+    linear-gradient(180deg,rgba(185,28,28,1) 0%,rgba(185,28,28,0.4) 55%,rgba(185,28,28,0) 100%),
+    linear-gradient(180deg,rgba(185,28,28,0.9) 0%,rgba(185,28,28,0.32) 55%,rgba(185,28,28,0) 100%),
+    linear-gradient(180deg,rgba(185,28,28,0.75) 0%,rgba(185,28,28,0.24) 55%,rgba(185,28,28,0) 100%);
+  background-size:3px 100%,3px 100%,3px 100%;
+  background-position:0 0,6px 0,12px 0;
+}
+.mastery-tag.mastery-shuxi::before{
+  width:9px;
+  background-image:
+    linear-gradient(180deg,rgba(180,83,9,1) 0%,rgba(180,83,9,0.38) 55%,rgba(180,83,9,0) 100%),
+    linear-gradient(180deg,rgba(180,83,9,0.82) 0%,rgba(180,83,9,0.28) 55%,rgba(180,83,9,0) 100%);
+  background-size:3px 100%,3px 100%;
+  background-position:0 0,6px 0;
+}
+.mastery-tag.mastery-lejie::before{
+  width:3px;
+  background-image:linear-gradient(180deg,rgba(37,99,235,1) 0%,rgba(37,99,235,0.36) 55%,rgba(37,99,235,0) 100%);
+  background-size:3px 100%;
+  background-position:0 0;
+}
+.mastery-tag:hover{color:var(--text-main);background:rgba(255,255,255,0.35)}
+.mastery-tag:hover::before{opacity:.7}
+.mastery-tag:active{transform:none}
+.mastery-tag.active{
+  color:var(--color-primary);background:transparent;box-shadow:none;
+}
+.mastery-tag.active::before{opacity:1}
+.mastery-tag.mastery-zhangwo.active{color:var(--color-master)}
+.mastery-tag.mastery-shuxi.active{color:var(--color-familiar)}
+.mastery-tag.mastery-lejie.active{color:var(--color-understand)}
+
+/* Width adaptive up to 4 columns; fixed equal row height — summary on card */
+.concept-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(max(240px,(100% - 3 * var(--space-4)) / 4),1fr));
+  grid-auto-rows:168px;
+  gap:var(--space-4);
+  align-items:stretch;
+}
+.concept-card{
+  position:relative;overflow:hidden;min-width:0;width:100%;max-width:100%;
+  height:100%;cursor:pointer;box-sizing:border-box;
+  display:grid;grid-template-rows:auto minmax(0,1fr) auto;align-content:stretch;
+  padding:12px 14px;border-radius:var(--radius-md);background:var(--bg-card);
+  border:1px solid rgba(255,255,255,0.95);
+  box-shadow:var(--elev-card);
+  opacity:1;transform:none;
+  transition:opacity 280ms var(--ease),box-shadow var(--transition-normal),border-color var(--transition-normal),background var(--transition-normal);
+}
+.concept-card.is-leaving{
+  opacity:0;pointer-events:none;
+}
+.concept-card.is-entering{
+  animation:card-enter 420ms var(--ease) both;
+}
+.concept-card::before{content:'';position:absolute;inset:0 0 auto 0;height:1px;background:var(--surface-shine);pointer-events:none;opacity:0.85}
+.concept-card::after{
+  content:'';position:absolute;left:18%;right:18%;bottom:-36%;height:48%;
+  background:radial-gradient(ellipse at center,rgba(var(--accent-rgb),0.22),transparent 72%);
+  opacity:0;filter:blur(10px);pointer-events:none;transition:opacity var(--transition-normal);
+}
+.concept-card:hover{
+  transform:none;background:var(--bg-card-hover);
+  border-color:rgba(var(--accent-rgb),0.28);
+  box-shadow:var(--elev-card-hover),0 0 0 1px rgba(var(--accent-rgb),0.10);
+}
+.concept-card:hover::after{opacity:1}
+.concept-card:active{transform:none;box-shadow:var(--elev-2)}
+.concept-card.is-master{
+  border-color:rgba(185,28,28,0.32);
+  box-shadow:var(--elev-card),0 0 0 1.5px rgba(185,28,28,0.22),0 0 18px rgba(185,28,28,0.08);
+}
+.concept-card.is-master:hover{
+  border-color:rgba(185,28,28,0.42);
+  box-shadow:var(--elev-card-hover),0 0 0 1.5px rgba(185,28,28,0.28),0 0 22px rgba(185,28,28,0.10);
+}
+/* Selected — border + top bar only (no fill / no title recolor) */
+.concept-card.is-selected{
+  border-color:rgba(37,99,235,0.42);
+  box-shadow:var(--elev-card),0 0 0 1px rgba(37,99,235,0.14);
+}
+.concept-card.is-selected:hover{
+  border-color:rgba(37,99,235,0.52);
+  box-shadow:var(--elev-card-hover),0 0 0 1px rgba(37,99,235,0.18);
+}
+.concept-card.is-master.is-selected{
+  border-color:rgba(185,28,28,0.42);
+  box-shadow:var(--elev-card),0 0 0 1.5px rgba(185,28,28,0.22);
+}
+.concept-card.is-master.is-selected:hover{
+  border-color:rgba(185,28,28,0.52);
+  box-shadow:var(--elev-card-hover),0 0 0 1.5px rgba(185,28,28,0.28);
+}
+.concept-card.is-familiar.is-selected{
+  border-color:rgba(180,83,9,0.44);
+  box-shadow:var(--elev-card),0 0 0 1.5px rgba(180,83,9,0.22);
+}
+.concept-card.is-familiar.is-selected:hover{
+  border-color:rgba(180,83,9,0.54);
+  box-shadow:var(--elev-card-hover),0 0 0 1.5px rgba(180,83,9,0.28);
+}
+.concept-card.is-understand.is-selected{
+  border-color:rgba(37,99,235,0.42);
+  box-shadow:var(--elev-card),0 0 0 1.5px rgba(37,99,235,0.20);
+}
+.concept-card.is-understand.is-selected:hover{
+  border-color:rgba(37,99,235,0.52);
+  box-shadow:var(--elev-card-hover),0 0 0 1.5px rgba(37,99,235,0.26);
+}
+.concept-card.is-selected::before{
+  height:3px;opacity:1;border-radius:var(--radius-md) var(--radius-md) 0 0;
+  background:linear-gradient(90deg,rgba(37,99,235,0.2),var(--color-accent) 50%,rgba(37,99,235,0.2));
+  transform-origin:center top;
+  animation:select-bar-in 340ms var(--ease-out) both;
+}
+.concept-card.is-master.is-selected::before{
+  background:linear-gradient(90deg,rgba(185,28,28,0.2),rgba(185,28,28,0.85) 50%,rgba(185,28,28,0.2));
+}
+.concept-card.is-familiar.is-selected::before{
+  background:linear-gradient(90deg,rgba(180,83,9,0.2),rgba(180,83,9,0.9) 50%,rgba(180,83,9,0.2));
+}
+.concept-card.is-understand.is-selected::before{
+  background:linear-gradient(90deg,rgba(37,99,235,0.2),rgba(37,99,235,0.85) 50%,rgba(37,99,235,0.2));
+}
+@keyframes select-bar-in{
+  from{transform:scaleX(0.2);opacity:0}
+  to{transform:scaleX(1);opacity:1}
+}
+.concept-card.is-selected .concept-card-title{color:var(--color-accent)}
+.concept-card.is-master.is-selected .concept-card-title{color:var(--color-master)}
+.concept-card.is-familiar.is-selected .concept-card-title{color:var(--color-familiar)}
+.concept-card.is-understand.is-selected .concept-card-title{color:var(--color-understand)}
+.concept-card.is-entering:nth-child(1){animation-delay:0ms}
+.concept-card.is-entering:nth-child(2){animation-delay:25ms}
+.concept-card.is-entering:nth-child(3){animation-delay:50ms}
+.concept-card.is-entering:nth-child(4){animation-delay:75ms}
+.concept-card.is-entering:nth-child(5){animation-delay:100ms}
+.concept-card.is-entering:nth-child(6){animation-delay:125ms}
+.concept-card.is-entering:nth-child(7){animation-delay:150ms}
+.concept-card.is-entering:nth-child(8){animation-delay:175ms}
+.concept-card.is-entering:nth-child(n+9){animation-delay:200ms}
+
+.concept-card-header{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--space-2);margin-bottom:var(--space-2);min-width:0;padding-right:20px}
+.concept-card-title{font-family:var(--font-heading);font-size:.9rem;font-weight:650;color:var(--text-main);line-height:1.35;min-width:0;flex:1;word-break:break-word;transition:color var(--transition-fast);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+/* Mastery marks: 3/2/1 strokes flush from card top border, fade down */
+.concept-card .concept-card-badge{
+  position:absolute;top:0;right:16px;z-index:3;
+  display:block;margin:0;padding:0;border:none;border-radius:0;
+  width:20px;height:30px;overflow:hidden;
+  font-size:0;line-height:0;color:transparent;pointer-events:none;
+  box-shadow:none;background-color:transparent;
+  background-repeat:no-repeat;
+}
+.concept-card .concept-card-badge::before{display:none;content:none}
+.concept-card .badge-master{
+  width:20px;
+  background-image:
+    linear-gradient(180deg,rgba(185,28,28,1) 0%,rgba(185,28,28,0.45) 48%,rgba(185,28,28,0) 100%),
+    linear-gradient(180deg,rgba(185,28,28,0.88) 0%,rgba(185,28,28,0.36) 48%,rgba(185,28,28,0) 100%),
+    linear-gradient(180deg,rgba(185,28,28,0.72) 0%,rgba(185,28,28,0.28) 48%,rgba(185,28,28,0) 100%);
+  background-size:4px 100%,4px 100%,4px 100%;
+  background-position:0 0,8px 0,16px 0;
+}
+.concept-card .badge-familiar{
+  width:12px;
+  background-image:
+    linear-gradient(180deg,rgba(180,83,9,1) 0%,rgba(180,83,9,0.42) 48%,rgba(180,83,9,0) 100%),
+    linear-gradient(180deg,rgba(180,83,9,0.8) 0%,rgba(180,83,9,0.3) 48%,rgba(180,83,9,0) 100%);
+  background-size:4px 100%,4px 100%;
+  background-position:0 0,8px 0;
+}
+.concept-card .badge-understand{
+  width:4px;
+  background-image:linear-gradient(180deg,rgba(37,99,235,1) 0%,rgba(37,99,235,0.38) 48%,rgba(37,99,235,0) 100%);
+  background-size:4px 100%;
+  background-position:0 0;
+}
+/* Detail panel keeps readable text chips */
+.app-detail-content .concept-card-badge{
+  position:static;display:inline-flex;align-items:center;gap:5px;
+  width:auto;height:auto;overflow:visible;pointer-events:auto;
+  padding:4px 10px;border-radius:999px;font-size:.72rem;font-weight:650;line-height:1.35;
+  letter-spacing:.02em;white-space:nowrap;color:inherit;
+  border:1px solid transparent;box-shadow:var(--elev-1);
+  background-image:none;
+}
+.app-detail-content .concept-card-badge::before{
+  content:'';display:block;width:6px;height:6px;border-radius:50%;flex-shrink:0;
+}
+.app-detail-content .badge-master{
+  background:linear-gradient(180deg,#fff5f5 0%,var(--color-master-bg) 100%);
+  color:var(--color-master);border-color:rgba(185,28,28,0.18);
+}
+.app-detail-content .badge-master::before{background:var(--color-master);box-shadow:0 0 0 2px rgba(185,28,28,0.12)}
+.app-detail-content .badge-familiar{
+  background:linear-gradient(180deg,#fffbeb 0%,var(--color-familiar-bg) 100%);
+  color:var(--color-familiar);border-color:rgba(180,83,9,0.18);
+}
+.app-detail-content .badge-familiar::before{background:var(--color-familiar);box-shadow:0 0 0 2px rgba(180,83,9,0.12)}
+.app-detail-content .badge-understand{
+  background:linear-gradient(180deg,#eff6ff 0%,var(--color-understand-bg) 100%);
+  color:var(--color-understand);border-color:rgba(37,99,235,0.18);
+}
+.app-detail-content .badge-understand::before{background:var(--color-understand);box-shadow:0 0 0 2px rgba(37,99,235,0.12)}
+.concept-card-summary{
+  position:relative;
+  font-size:.78rem;color:var(--text-light);line-height:1.5;margin:0 0 var(--space-2);
+  min-height:0;min-width:0;align-self:stretch;
+  overflow:hidden;
+  display:block;word-break:break-word;
+}
+/* Fade only the last few glyphs on the last line — not the whole bottom row */
+.concept-card-summary::after{
+  content:'';position:absolute;right:0;bottom:0;
+  width:2.75em;height:1.5em;
+  background:linear-gradient(90deg,rgba(255,255,255,0),var(--bg-card) 72%);
+  pointer-events:none;
+}
+.concept-card:hover .concept-card-summary::after{
+  background:linear-gradient(90deg,rgba(255,255,255,0),var(--bg-card-hover) 72%);
+}
+
+
+
+
+.concept-card-footer{display:flex;align-items:center;justify-content:space-between;gap:var(--space-2);min-width:0;padding-top:2px}
+.concept-card-tags{display:flex;gap:var(--space-1);flex-wrap:wrap;flex:1;min-width:0;max-height:2.6em;overflow:hidden}
+.concept-card-tag{
+  font-size:.62rem;padding:1px 7px;border-radius:999px;white-space:nowrap;
+  background:rgba(var(--header-rgb),0.05);color:var(--text-muted);
+  transition:background var(--transition-fast),color var(--transition-fast),box-shadow var(--transition-fast);
+}
+.concept-card:hover .concept-card-tag{background:var(--active-bg);color:var(--text-light);box-shadow:var(--soft-edge)}
+.concept-card-star{
+  border:none;background:none;cursor:pointer;font-size:1.05rem;color:#c9d0d8;
+  width:32px;height:32px;padding:0;line-height:1;flex-shrink:0;border-radius:var(--radius-sm);
+  display:inline-flex;align-items:center;justify-content:center;
+  transition:color var(--transition-fast),background var(--transition-fast),filter var(--transition-fast);
+  will-change:transform;
+}
+.concept-card-star:hover{color:var(--color-star);background:rgba(234,179,8,0.12)}
+.concept-card-star.favorited{color:var(--color-star);filter:drop-shadow(0 2px 6px rgba(234,179,8,0.45))}
+.concept-card-star.star-pop{animation:star-pop 420ms var(--ease-spring) both}
+.concept-card-star.star-unpop{animation:star-unpop 280ms var(--ease) both}
+#detailStar.concept-card-star{font-size:1rem;width:32px;height:32px;border-radius:8px}
+@keyframes star-pop{
+  0%{transform:scale(1) rotate(0)}
+  30%{transform:scale(1.4) rotate(-12deg)}
+  55%{transform:scale(0.9) rotate(6deg)}
+  100%{transform:scale(1) rotate(0)}
+}
+@keyframes star-unpop{
+  0%{transform:scale(1)}
+  40%{transform:scale(0.75)}
+  100%{transform:scale(1)}
+}
+
+.empty-state{text-align:center;padding:var(--space-5) var(--space-4);color:var(--text-muted)}
+.empty-state.is-leaving{opacity:0;transition:opacity 180ms var(--ease);pointer-events:none}
+.empty-state.is-entering{animation:switch-in 220ms var(--ease) both}
+.empty-state-icon{font-size:2.4rem;margin-bottom:var(--space-2);opacity:.85;filter:drop-shadow(0 4px 10px rgba(var(--header-rgb),0.12))}
+.empty-state-text{font-size:.92rem}
+
+.question-list-header{margin-bottom:var(--space-3);animation:switch-in var(--duration-normal) var(--ease) both}
+.question-stats{font-size:.8rem;color:var(--text-muted);margin-top:2px}
+.question-stats span{font-weight:700;color:var(--color-accent)}
+.question-item{
+  background:var(--bg-card);border-radius:var(--radius-md);padding:14px var(--space-4);margin-bottom:var(--space-3);
+  border:1px solid rgba(255,255,255,0.95);
+  box-shadow:var(--elev-card);
+  transition:transform var(--transition-fast),box-shadow var(--transition-fast),border-color var(--transition-fast);
+  animation:switch-in var(--duration-normal) var(--ease) both;
+}
+.question-item:hover{transform:none;border-color:rgba(var(--accent-rgb),0.22);box-shadow:var(--elev-card-hover),0 0 0 1px rgba(var(--accent-rgb),0.08)}
+.question-number{font-weight:700;color:var(--color-accent);font-family:var(--font-heading)}
+.question-stem{font-size:.88rem;color:var(--text-main);margin-bottom:var(--space-3);line-height:1.55;font-weight:500}
+.question-options{display:flex;flex-direction:column;gap:var(--space-2);margin-bottom:var(--space-2)}
+.question-option{
+  padding:9px var(--space-3);border-radius:var(--radius-sm);border:1px solid var(--color-border);
+  font-size:.82rem;cursor:pointer;text-align:left;background:var(--bg-soft);
+  box-shadow:var(--inset-highlight);
+  transition:background var(--transition-fast),border-color var(--transition-fast),transform var(--transition-fast),box-shadow var(--transition-fast);
+}
+.question-option:hover{border-color:rgba(var(--accent-rgb),0.32);background:var(--hover-bg);transform:translateX(2px);box-shadow:var(--elev-1)}
+.question-option.selected-correct{border-color:transparent;background:var(--color-correct-bg);color:var(--color-correct);font-weight:600;box-shadow:0 0 0 1px rgba(5,150,105,0.2),0 6px 14px rgba(5,150,105,0.1)}
+.question-option.selected-wrong{border-color:transparent;background:var(--color-wrong-bg);color:var(--color-wrong);box-shadow:0 0 0 1px rgba(220,38,38,0.2),0 6px 14px rgba(220,38,38,0.08)}
+.question-answer-reveal{
+  display:none;margin-top:var(--space-3);padding:var(--space-3);border-radius:var(--radius-sm);
+  background:var(--color-hint-bg);border:1px solid rgba(180,83,9,0.18);
+  font-size:.82rem;color:var(--text-light);line-height:1.55;
+  box-shadow:var(--elev-1);animation:reveal-in var(--duration-normal) var(--ease) both;
+}
+.question-answer-reveal.show{display:block}
+.question-tf{display:flex;gap:var(--space-2);margin-bottom:var(--space-2)}
+.question-tf-btn{
+  padding:var(--space-2) var(--space-4);border-radius:999px;border:1px solid var(--color-border);
+  font-size:.82rem;cursor:pointer;background:var(--bg-soft);box-shadow:var(--elev-1);
+  transition:all var(--transition-fast);
+}
+.question-tf-btn:hover{border-color:rgba(var(--accent-rgb),0.32);background:var(--hover-bg);box-shadow:var(--elev-2)}
+.question-tf-btn.selected-correct{border-color:transparent;background:var(--color-correct-bg);color:var(--color-correct);font-weight:600}
+.question-tf-btn.selected-wrong{border-color:transparent;background:var(--color-wrong-bg);color:var(--color-wrong)}
+
+.terminology-item{
+  background:var(--bg-card);border-radius:var(--radius-md);padding:14px var(--space-4);margin-bottom:var(--space-3);
+  border:1px solid rgba(255,255,255,0.95);box-shadow:var(--elev-card);cursor:pointer;
+  transition:transform var(--transition-fast),box-shadow var(--transition-fast),border-color var(--transition-fast);
+  animation:switch-in var(--duration-normal) var(--ease) both;
+}
+.terminology-item:hover{transform:none;border-color:rgba(var(--accent-rgb),0.22);box-shadow:var(--elev-card-hover),0 0 0 1px rgba(var(--accent-rgb),0.08)}
+.terminology-term{font-size:.9rem;font-weight:650;color:var(--color-primary);margin-bottom:3px}
+.terminology-hint{font-size:.72rem;color:var(--text-muted)}
+.terminology-answer{
+  display:none;margin-top:var(--space-3);padding:var(--space-3);border-radius:var(--radius-sm);
+  background:var(--color-hint-bg);border:1px solid rgba(180,83,9,0.18);
+  font-size:.82rem;color:var(--text-light);line-height:1.6;box-shadow:var(--elev-1);
+  animation:reveal-in var(--duration-normal) var(--ease) both;
+}
+.terminology-answer.show{display:block}
+
+.multi-opts{display:flex;flex-direction:column;gap:var(--space-2)}
+.multi-opt{
+  display:flex;align-items:center;gap:var(--space-2);padding:9px var(--space-3);border-radius:var(--radius-sm);
+  border:1px solid var(--color-border-soft);cursor:pointer;font-size:.82rem;background:var(--bg-soft);
+  box-shadow:var(--inset-highlight);transition:all var(--transition-fast);
+}
+.multi-opt:hover{border-color:rgba(var(--accent-rgb),0.28);background:var(--hover-bg);box-shadow:var(--elev-1)}
+.multi-opt input{accent-color:var(--color-accent)}
+.multi-opt.selected-correct{background:var(--color-correct-bg);border-color:transparent;color:var(--color-correct-text)}
+.multi-opt.selected-wrong{background:var(--color-wrong-bg);border-color:transparent;color:var(--color-wrong-text)}
+.quiz-actions{margin-top:var(--space-3);display:flex;gap:var(--space-2);flex-wrap:wrap}
+.quiz-actions .btn-check-multi{font-size:.82rem;padding:7px 14px}
+
+.app-detail-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:var(--space-3) var(--space-4);flex-shrink:0;
+  border:none;border-bottom:1px solid var(--color-border-soft);border-radius:0;
+  background:linear-gradient(180deg,#fafbfd 0%,rgba(255,255,255,0.92) 100%);
+  box-shadow:0 6px 18px rgba(var(--header-rgb),0.05);
+  position:relative;overflow:visible;
+}
+.app-detail-header::before{display:none}
+.app-detail-title{
+  font-family:var(--font-heading);font-size:.98rem;font-weight:700;color:var(--color-primary);
+  flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.app-detail-actions{
+  display:inline-flex;align-items:center;gap:6px;flex-shrink:0;
+}
+.app-detail-actions .concept-card-star,
+.app-detail-actions .btn-detail-close{
+  width:32px;height:32px;min-width:32px;min-height:32px;padding:0;margin:0;
+  border:none;border-radius:8px;box-sizing:border-box;
+  display:inline-flex;align-items:center;justify-content:center;
+  font-size:1rem;line-height:1;color:var(--text-muted);background:transparent;
+  box-shadow:none;cursor:pointer;flex-shrink:0;
+  transition:color var(--transition-fast),background var(--transition-fast),box-shadow var(--transition-fast),filter var(--transition-fast);
+}
+.app-detail-actions .btn-detail-close{font-size:1.15rem;font-weight:500}
+.app-detail-actions .btn-detail-close:hover{
+  background:rgba(var(--header-rgb),0.08);color:var(--text-main);box-shadow:var(--elev-1);
+}
+.app-detail-actions .concept-card-star:hover{
+  color:var(--color-star);background:rgba(234,179,8,0.12);box-shadow:var(--elev-1);
+}
+.app-detail-actions .concept-card-star.favorited{
+  color:var(--color-star);filter:drop-shadow(0 2px 6px rgba(234,179,8,0.45));
+}
+.app-detail-content{
+  padding:var(--space-4);flex:1;min-height:0;overflow-y:auto;
+  border:none;border-radius:0;background:transparent;box-shadow:none;
+  position:relative;
+  animation:switch-in var(--duration-fast) var(--ease) both;
+}
+.app-detail-content::before{display:none}
+.app-detail-content ul,.app-detail-content ol{padding-left:18px;margin:var(--space-2) 0}
+.app-detail-content ul{list-style:disc}
+.app-detail-content ol{list-style:decimal}
+.app-detail-content li{margin-bottom:3px;font-size:.84rem;line-height:1.55}
+.app-detail-content p{margin-bottom:var(--space-2);font-size:.84rem;line-height:1.65}
+.app-detail-footer{
+  display:none;padding:var(--space-3);border-top:1px solid var(--color-border-soft);
+  background:var(--bg-card);flex-shrink:0;
+}
+.app-detail-back{
+  width:100%;padding:var(--space-3);font-size:.95rem;font-weight:600;text-align:center;border-radius:var(--radius-md);
+  color:var(--color-on-header);
+  background:linear-gradient(135deg,var(--color-header),color-mix(in srgb,var(--color-header) 70%,var(--color-accent)));
+  box-shadow:var(--elev-2),0 8px 20px rgba(var(--header-rgb),0.22);
+  transition:transform var(--transition-fast),box-shadow var(--transition-fast),filter var(--transition-fast);
+}
+.app-detail-back:hover{transform:translateY(-1px);box-shadow:var(--elev-3),0 12px 28px rgba(var(--header-rgb),0.28);filter:brightness(1.04)}
+.app-detail-content strong{color:var(--color-primary)}
+.app-detail-empty{
+  text-align:center;padding:var(--space-5) var(--space-4);color:var(--text-muted);
+  font-size:.86rem;line-height:1.6;
+  margin:var(--space-2) 0;
+  border-radius:var(--radius-md);
+  background:var(--bg-card);
+  border:1px solid rgba(255,255,255,0.95);
+  box-shadow:var(--elev-card);
+}
+.app-detail-section{
+  margin-top:var(--space-3);padding:var(--space-3);
+  border-radius:var(--radius-md);
+  border:1px solid rgba(255,255,255,0.95);
+  background:var(--bg-card);
+  box-shadow:var(--elev-1);
+}
+.app-detail-section-title{font-size:.72rem;font-weight:650;color:var(--text-muted);margin-bottom:var(--space-2);letter-spacing:.04em}
+.detail-related-link{
+  display:block;padding:var(--space-2) var(--space-3);margin-bottom:var(--space-1);border-radius:var(--radius-sm);
+  font-size:.8rem;color:var(--color-accent);cursor:pointer;background:var(--bg-soft);
+  border:1px solid var(--color-border-soft);
+  box-shadow:var(--elev-1);transition:background var(--transition-fast),transform var(--transition-fast),box-shadow var(--transition-fast);
+}
+.detail-related-link:hover{background:var(--active-bg);transform:translateX(3px);box-shadow:var(--elev-2)}
+.detail-back-btn{
+  display:inline-flex;align-items:center;gap:var(--space-1);padding:var(--space-1) var(--space-3);margin-bottom:var(--space-2);
+  border:1px solid var(--color-border);border-radius:999px;background:var(--bg-card);
+  color:var(--text-light);font-size:.74rem;cursor:pointer;box-shadow:var(--elev-1);transition:all var(--transition-fast);
+}
+.detail-back-btn:hover{border-color:rgba(var(--accent-rgb),0.3);color:var(--color-accent);background:#fff;box-shadow:var(--elev-2)}
+.hidden{display:none!important}
+
+.modal-overlay{
+  display:none;position:fixed;inset:0;z-index:200;align-items:center;justify-content:center;padding:var(--space-4);
+  background:rgba(var(--header-rgb),0.4);backdrop-filter:blur(10px) saturate(1.1);-webkit-backdrop-filter:blur(10px) saturate(1.1);
+}
+.modal-overlay.show{display:flex;animation:fade-in var(--duration-normal) var(--ease) both}
+.modal{
+  width:90%;max-width:620px;max-height:85vh;display:flex;flex-direction:column;overflow:hidden;
+  background:#fff;border-radius:var(--radius-lg);
+  border:1px solid rgba(255,255,255,0.95);
+  box-shadow:var(--elev-4);
+  animation:modal-in var(--duration-slow) var(--ease-spring) both;
+}
+.modal-header{
+  display:flex;align-items:center;justify-content:space-between;padding:14px 18px;
+  border-bottom:1px solid var(--color-border-soft);
+  background:linear-gradient(180deg,#f8fafc,#fff);
+}
+.modal-title{font-family:var(--font-heading);font-size:1.05rem;font-weight:700;color:var(--color-primary)}
+.modal-close{
+  width:30px;height:30px;display:flex;align-items:center;justify-content:center;
+  border-radius:50%;font-size:.88rem;color:var(--text-muted);transition:all var(--transition-fast);
+}
+.modal-close:hover{background:rgba(var(--header-rgb),0.06);color:var(--text-main);box-shadow:var(--elev-1)}
+.modal-body{padding:18px;overflow-y:auto;flex:1}
+.modal-footer{
+  display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);padding:var(--space-3) 18px;
+  border-top:1px solid var(--color-border-soft);background:linear-gradient(180deg,#fff,#f8fafc);
+}
+.form-group{margin-bottom:14px}
+.form-label{display:block;font-size:.82rem;font-weight:600;color:var(--text-light);margin-bottom:var(--space-1)}
+.form-input{
+  width:100%;padding:9px var(--space-3);border:1px solid var(--color-border);border-radius:var(--radius-sm);
+  font-size:.88rem;outline:none;font-family:inherit;background:var(--bg-card);
+  box-shadow:var(--inset-highlight);transition:border var(--transition-fast),box-shadow var(--transition-fast);
+}
+.form-input:focus{border-color:rgba(var(--accent-rgb),0.45);box-shadow:var(--focus-ring)}
+.checkbox-group{display:flex;flex-wrap:wrap;gap:var(--space-3)}
+.checkbox-label{display:flex;align-items:center;gap:var(--space-2);font-size:.82rem;cursor:pointer}
+.checkbox-label input[type="checkbox"]{accent-color:var(--color-accent);width:15px;height:15px}
+.btn-primary{
+  padding:9px 20px;border-radius:999px;font-size:.88rem;font-weight:600;
+  background:linear-gradient(135deg,var(--color-accent),#3b82f6);color:var(--color-on-header);
+  box-shadow:0 6px 18px rgba(var(--accent-rgb),0.3);transition:all var(--transition-fast);
+}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 10px 24px rgba(var(--accent-rgb),0.38);filter:brightness(1.03)}
+.btn-secondary{
+  padding:9px 20px;border-radius:999px;font-size:.88rem;font-weight:500;
+  background:rgba(var(--header-rgb),0.06);color:var(--text-light);box-shadow:var(--elev-1);transition:all var(--transition-fast);
+}
+.btn-secondary:hover{background:rgba(var(--header-rgb),0.1);box-shadow:var(--elev-2)}
+
+.quiz-progress{height:6px;background:rgba(var(--header-rgb),0.06);border-radius:999px;margin-bottom:14px;overflow:hidden;box-shadow:inset 0 1px 2px rgba(0,0,0,0.04)}
+.quiz-progress-bar{
+  height:100%;border-radius:999px;background:linear-gradient(90deg,var(--color-primary),var(--color-accent),#60a5fa);
+  transition:width var(--transition-normal);box-shadow:0 0 12px rgba(var(--accent-rgb),0.4);
+}
+.quiz-question-stem{font-size:.95rem;font-weight:650;color:var(--text-main);margin-bottom:14px;line-height:1.55}
+.quiz-feedback{
+  margin-top:var(--space-3);padding:var(--space-3);border-radius:var(--radius-sm);font-size:.84rem;line-height:1.55;
+  box-shadow:var(--elev-1);animation:reveal-in var(--duration-normal) var(--ease) both;
+}
+.quiz-feedback.correct{background:var(--color-correct-bg);color:var(--color-correct-text)}
+.quiz-feedback.wrong{background:var(--color-wrong-bg);color:var(--color-wrong-text)}
+.quiz-score{text-align:center;padding:36px var(--space-4);animation:switch-in var(--duration-normal) var(--ease) both}
+.quiz-score-value{font-size:2.75rem;font-weight:700;font-family:var(--font-heading);color:var(--color-accent);text-shadow:0 8px 24px rgba(var(--accent-rgb),0.2)}
+.quiz-score-label{font-size:1rem;color:var(--text-light);margin-top:var(--space-2)}
+
+@keyframes switch-in{from{opacity:0}to{opacity:1}}
+@keyframes fade-in{from{opacity:0}to{opacity:1}}
+@keyframes reveal-in{from{opacity:0}to{opacity:1}}
+@keyframes modal-in{from{opacity:0;transform:translateY(10px) scale(0.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes rise-in{from{opacity:0}to{opacity:1}}
+@keyframes card-in{from{opacity:0}to{opacity:1}}
+@keyframes card-enter{from{opacity:0}to{opacity:1}}
+@keyframes reveal-down{from{opacity:0}to{opacity:1}}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}
+  .concept-card:hover,.question-item:hover,.terminology-item:hover{transform:none}
+}
+
+@media (max-width: 1200px) {
+  :root { --sidebar-width: 220px; }
+  .app { grid-template-columns: var(--sidebar-width) 1fr 300px; }
+  .concept-grid {
+    grid-template-columns: repeat(auto-fill, minmax(max(220px, (100% - 3 * var(--space-4)) / 4), 1fr));
+    grid-auto-rows:160px;
+  }
+}
+@media (max-width: 1024px) {
+  .app { grid-template-columns: var(--sidebar-width) 1fr; grid-template-areas: "header header" "sidebar main"; }
+  .app-detail {
+    display: none; position: fixed; top: 0; right: 0; bottom: 0; width: var(--detail-width); z-index: 150;
+    box-shadow: -12px 0 40px rgba(var(--header-rgb),0.18);
+  }
+  .app-detail.show { display: flex; }
+  .app-main { padding: var(--space-4); }
+  .header-brand .brand-title { font-size: .95rem; }
+  .btn-hamburger { display: flex; }
+  .sidebar-mobile-header { display: flex; }
+  .header-actions-sep { display: none; }
+  .btn-icon,.btn-favorites,.btn-quiz { width:36px;min-width:36px;max-width:36px;flex:0 0 36px;padding:0; }
+  .btn-icon span { display: none; }
+  .header-chip-count { display: inline-block; }
+}
+@media (max-width: 767px) {
+  .app { grid-template-columns: 1fr; grid-template-areas: "header" "main"; }
+  .app-sidebar {
+    display: flex; position: fixed; top: var(--header-height); left: 0; bottom: 0;
+    width: 270px; z-index: 90; transform: translateX(-100%);
+    transition: transform var(--transition-slow);
+    box-shadow: 8px 0 28px rgba(var(--header-rgb),0.16);
+  }
+  .app-sidebar.show { transform: translateX(0); }
+  .sidebar-overlay.show { display: block; }
+  .sidebar-overlay { top: var(--header-height); z-index: 85; }
+  .sidebar-mobile-header { display: none; }
+  .app-detail {
+    display: none; position: fixed; top: 0; left: 0;
+    width: 100vw; height: 100vh; height: 100dvh; z-index: 151; flex-direction: column;
+    padding-top: env(safe-area-inset-top); border-left: none; box-shadow: none;
+  }
+  .app-detail.show { display: flex; }
+  .app-detail-footer { display: block; }
+  .detail-overlay { display: none; position: fixed; inset: 0; background: rgba(var(--header-rgb),0.32); z-index: 94; }
+  .app-detail.show + .detail-overlay,
+  .detail-overlay.show { display: block; }
+  .app-header {
+    padding: 0 var(--space-2); gap: 10px;
+  }
+  .header-center { flex: 0 1 auto; max-width: none; }
+  .btn-hamburger { display: flex; flex-shrink: 0; }
+  .header-brand .brand-text { display: none; }
+  .header-actions-sep { display: none; }
+  .btn-icon,.btn-favorites,.btn-quiz { width:36px;min-width:36px;max-width:36px;flex:0 0 36px;padding:0; }
+  .btn-icon span { display: none; }
+  .header-chip-count { display: inline-block; }
+  .app-main { padding: var(--space-3); }
+  .concept-grid { grid-template-columns: 1fr; gap: var(--space-2); grid-auto-rows:152px; }
+  .main-title { font-size: 1.05rem; }
+  .modal { width: 95vw; max-width: 95vw; border-radius: var(--radius-md); }
+  button { touch-action: manipulation; }
+}
+@media (max-width: 380px) {
+  .header-brand .brand-icon { display: none; }
+  .concept-card { padding: var(--space-3); }
+}
+
+/* Enhance markers — support both enh-* (template) and cmp-* (patch-enhance JS) */
+.enh-cmp,.cmp-wrap{margin-top:var(--space-3);border:1px solid var(--color-border);border-radius:var(--radius-md);overflow:hidden;box-shadow:var(--elev-2);background:var(--bg-card)}
+.enh-cmp-head,.cmp-head{background:linear-gradient(115deg,var(--color-primary),color-mix(in srgb,var(--color-primary) 70%,var(--color-accent)));color:var(--color-on-header);padding:9px var(--space-3);font-weight:650;font-size:.86rem;box-shadow:0 4px 14px rgba(var(--header-rgb),0.18);line-height:1.35;border-bottom:1px solid rgba(255,255,255,0.12)}
+.enh-cmp-scroll{overflow-x:auto}
+.enh-cmp-table,.cmp-table{width:100%;border-collapse:collapse;border-spacing:0;font-size:.82rem;table-layout:fixed;margin:0}
+.enh-cmp-table th,.cmp-table th{background:var(--bg-soft);color:var(--text-light);text-align:left;padding:7px var(--space-3);border-bottom:1px solid var(--color-border);font-weight:600;vertical-align:top;word-break:break-word}
+.enh-cmp-table td,.cmp-table td,.cmp-table .cmp-cell{padding:7px var(--space-3);border-bottom:1px solid var(--color-border-soft);vertical-align:top;line-height:1.55;text-align:left;word-break:break-word;overflow-wrap:anywhere}
+.enh-cmp-table tr:last-child td,.cmp-table tr:last-child td{border-bottom:none}
+.enh-cmp-table tr:nth-child(even) td,.cmp-table tr:nth-child(even) td{background:var(--bg-soft)}
+.enh-cmp-key,.cmp-key,.cmp-table .cmp-key,.cmp-table th.cmp-key{width:22%;font-weight:600;color:var(--color-primary);background:var(--bg-card-hover)!important}
+.enh-cmp-table tr:hover td,.cmp-table tr:hover td{background:var(--hover-bg)}
+@media(max-width:640px){.enh-cmp-key,.cmp-key,.cmp-table .cmp-key{width:30%}.enh-cmp-table,.cmp-table{font-size:.78rem}}
+.enh-tree,.enh-flow,.enh-fc{margin-top:var(--space-3);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-3);background:var(--bg-card);box-shadow:var(--elev-2),var(--inset-highlight)}
+.enh-tree-title,.enh-flow-title,.enh-fc-title{font-family:var(--font-heading);font-weight:650;font-size:.86rem;margin-bottom:var(--space-2);color:var(--color-primary)}
+.enh-tree-row{padding-top:2px;font-size:.82rem;line-height:1.5}
+.enh-tree-row.lvl-1{font-weight:600}
+.enh-flow-steps{display:flex;flex-wrap:wrap;gap:var(--space-1);align-items:center}
+.enh-flow-step{background:var(--bg-soft);padding:var(--space-1) var(--space-3);border-radius:999px;font-size:.76rem;border:1px solid var(--color-border-soft);box-shadow:var(--elev-1);transition:background var(--transition-fast),border-color var(--transition-fast),box-shadow var(--transition-fast)}
+.enh-flow-step:hover{background:var(--hover-bg);border-color:rgba(var(--accent-rgb),0.28);box-shadow:var(--elev-2)}
+.enh-fc-card,.fc-card{border:1px solid var(--color-border-soft);border-radius:var(--radius-sm);padding:var(--space-2) var(--space-3);margin-bottom:var(--space-1);cursor:pointer;font-size:.82rem;background:var(--bg-card);box-shadow:var(--elev-1);transition:box-shadow var(--transition-fast),border-color var(--transition-fast),transform var(--transition-fast)}
+.enh-fc-card:hover,.fc-card:hover{box-shadow:var(--elev-2);border-color:rgba(var(--accent-rgb),0.22);transform:translateY(-1px)}
+.enh-fc-q,.fc-q{font-weight:600}
+.enh-fc-a,.fc-a{display:none;margin-top:var(--space-1);color:var(--color-primary);padding-top:var(--space-1);border-top:1px dashed var(--color-border-soft);animation:reveal-in var(--duration-fast) var(--ease) both}
+.enh-fc-card.open .enh-fc-a,.fc-card.open .fc-a{display:block}
+</style>
+</head>
+<body>
+
+<div class="app" id="app">
+  <!-- HEADER -->
+  <header class="app-header">
+    <div class="header-lead">
+    <div class="header-left">
+      <button class="btn-hamburger" id="btnHamburger" title="菜单" aria-label="菜单">☰</button>
+      <div class="header-brand">
+        <span class="brand-icon" aria-hidden="true">{{学科图标}}</span>
+        <span class="brand-text">
+          <span class="brand-title">{{学科名}}</span>
+          <span class="brand-accent">{{副标题}}</span>
+        </span>
+      </div>
+    </div>
+    <div class="header-center">
+      <div class="header-search-wrap" id="searchWrap">
+        <button class="search-trigger" id="searchTrigger" aria-label="搜索" title="搜索">
+          <span class="search-trigger-text">搜索</span>
+        </button>
+        <svg class="search-glass-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="16" height="16" aria-hidden="true">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <span class="search-input-inner">
+          <input type="text" id="searchInput" placeholder="搜索知识点…" autocomplete="off" aria-label="搜索">
+          <button class="search-clear hidden" id="searchClear" aria-label="清除搜索" title="清除">✕</button>
+        </span>
+      </div>
+    </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn-icon btn-favorites" id="btnFavorites" title="收藏筛选">
+        ★ <span>收藏</span> <span id="favCount" class="header-chip-count">0</span>
+      </button>
+      <span class="header-actions-sep" aria-hidden="true"></span>
+      <button class="btn-icon btn-quiz" id="btnQuiz" title="刷题模式">
+        📝 <span>刷题</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- SIDEBAR -->
+  <aside class="app-sidebar" id="sidebar">
+    <div class="sidebar-mobile-header">
+      <span class="sidebar-mobile-title">导航菜单</span>
+      <button class="sidebar-mobile-close" id="sidebarClose">&times;</button>
+    </div>
+    <div class="sidebar-mode-toggle" id="sidebarModeToggle">
+      <button class="sidebar-mode-btn knowledge-mode-btn active" data-mode="knowledge">📚 知识点</button>
+      <button class="sidebar-mode-btn" data-mode="question">📝 题目</button>
+    </div>
+    <div id="sidebarTree"></div>
+    <div id="sidebarQuestionTabs" class="sidebar-question-tabs hidden"></div>
+  </aside>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  <div class="detail-overlay" id="detailOverlay"></div>
+
+  <!-- MAIN -->
+  <main class="app-main" id="mainContent"></main>
+
+  <!-- DETAIL PANEL -->
+  <aside class="app-detail" id="appDetail">
+    <div class="app-detail-header">
+      <span class="app-detail-title" id="detailTitle">详情</span>
+      <div class="app-detail-actions">
+        <button type="button" class="concept-card-star" id="detailStar" style="display:none;" title="收藏" aria-label="收藏">★</button>
+        <button class="btn-detail-close" id="detailClose" title="关闭">&times;</button>
+      </div>
+    </div>
+    <div class="app-detail-content" id="detailBody">
+      <div class="app-detail-empty">点击知识点或题目查看详情</div>
+    </div>
+    <div class="app-detail-footer">
+      <button class="app-detail-back" id="detailBack" aria-label="返回列表">← 返回列表</button>
+    </div>
+  </aside>
+</div>
+
+<!-- Quiz Modal -->
+<div class="modal-overlay" id="quizModalOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="quizModalTitle">刷题模式</span>
+      <button class="modal-close" id="quizModalClose">&times;</button>
+    </div>
+    <div class="modal-body" id="quizModalBody"></div>
+    <div class="modal-footer" id="quizModalFooter"></div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// DATA
+// ============================================================
+// ── KNOWLEDGE CATEGORIES ──
+const KNOWLEDGE_CATEGORIES = [
+  // ============================================================
+  // DATA: KNOWLEDGE_CATEGORIES — 知识点数据（模板化占位，按结构填充后即用）
+  // 分类结构：{ id, name, icon, subcategories:[{id,name}], concepts:[{...}] }
+  // 概念字段：id / title / subcategory(子分类id) / mastery(掌握|熟悉|了解) / summary(一句话) / content(HTML) / tags[] / isKey(必背)
+  // 掌握度由资料判断写入，前端只读；isKey=true 为必背知识点（出题保证覆盖）
+  // 填充示例（使用前删除）：
+  // { id:"ch00", name:"第一章 绪论", icon:"🔬",
+  //   subcategories:[{id:"ch00_0", name:"小节一"}, {id:"ch00_1", name:"小节二"}],
+  //   concepts:[{ id:"k001", title:"知识点标题", subcategory:"ch00_0", mastery:"掌握",
+  //     summary:"一句话摘要", content:"<p>正文，可含HTML</p>", tags:["标签"], isKey:true }] }
+];
+
+// ── QUESTION BANK ──
+const QUESTION_BANK = {
+  // ============================================================
+  // DATA: QUESTION_BANK — 题库（模板化占位，按结构填充后即用）
+  // 六键：choice / multi / truefalse / fill / terminology / essay
+  // 题目字段：id / stem / options[] / answer / chapter / explanation / cardId
+  //   answer：choice=索引; multi=索引数组; truefalse=对|错; fill/essay=文本; terminology 另有 term/fullAnswer
+  // 题型入口由 Object.keys(bank) 动态生成，空数组自动隐藏
+  // ============================================================
+  choice: [],
+  multi: [],
+  truefalse: [],
+  fill: [],
+  terminology: [],
+  essay: []
+};
+
+// ============================================================
+// STATE
+// ============================================================
+const STORAGE_FAV = 'microbio_favorites';
+const STORAGE_WRONG = 'microbio_wrongbook';
+const STORAGE_PROGRESS = 'microbio_progress';
+// 提示：使用前将 STORAGE_FAV / STORAGE_WRONG / STORAGE_PROGRESS 前缀改为本学科标识，避免多学科数据串用
+
+const state = {
+  sidebarMode: 'knowledge',
+  questionTab: 'choice',
+  activeCategoryId: null,
+  activeSubcategoryId: null,
+  searchQuery: '',
+  showFavoritesOnly: false,
+  expandedCategories: new Set(),
+  masteryFilter: null,
+  favorites: [],
+  wrongBook: [],
+  sidebarOpen: false,
+  selectedDetail: null,
+  detailHistory: [],  // stack for back-navigation: [{type, id, qtype}]
+  quizState: null,
+};
+
+// ============================================================
+// DOM REFS
+// ============================================================
+const $ = (sel) => document.querySelector(sel);
+const dom = {};
+function initDom() {
+  dom.sidebar = $('#sidebar');
+  dom.sidebarTree = $('#sidebarTree');
+  dom.sidebarQuestionTabs = $('#sidebarQuestionTabs');
+  dom.sidebarOverlay = $('#sidebarOverlay');
+  dom.detailOverlay = $('#detailOverlay');
+  dom.mainContent = $('#mainContent');
+  dom.searchWrap = $('#searchWrap');
+  dom.searchTrigger = $('#searchTrigger');
+  dom.searchInput = $('#searchInput');
+  dom.searchClear = $('#searchClear');
+  dom.btnFavorites = $('#btnFavorites');
+  dom.btnHamburger = $('#btnHamburger');
+  dom.btnQuiz = $('#btnQuiz');
+  dom.favCount = $('#favCount');
+  dom.appDetail = $('#appDetail');
+  dom.detailBody = $('#detailBody');
+  dom.detailTitle = $('#detailTitle');
+  dom.detailStar = $('#detailStar');
+  dom.detailClose = $('#detailClose');
+  dom.detailBack = $('#detailBack');
+  dom.quizModalOverlay = $('#quizModalOverlay');
+  dom.quizModalBody = $('#quizModalBody');
+  dom.quizModalFooter = $('#quizModalFooter');
+  dom.quizModalClose = $('#quizModalClose');
+  dom.quizModalTitle = $('#quizModalTitle');
+  dom.sidebarModeToggle = $('#sidebarModeToggle');
+}
+
+// ============================================================
+// DATA ACCESS
+// ============================================================
+function getCategories() {
+  return (typeof KNOWLEDGE_CATEGORIES !== 'undefined' && Array.isArray(KNOWLEDGE_CATEGORIES)) ? KNOWLEDGE_CATEGORIES : [];
+}
+function getCategoryById(id) {
+  return getCategories().find(c => c.id === id);
+}
+function getAllConceptsFlat() {
+  const all = [];
+  for (const cat of getCategories()) {
+    for (const c of (cat.concepts || [])) {
+      all.push({ ...c, chapterId: cat.id, chapterName: cat.name });
+    }
+  }
+  return all;
+}
+function getConceptById(id) {
+  for (const cat of getCategories()) {
+    const found = (cat.concepts || []).find(c => c.id === id);
+    if (found) return { ...found, chapterId: cat.id, chapterName: cat.name };
+  }
+  return null;
+}
+function getQuestionBank() {
+  return (typeof QUESTION_BANK !== 'undefined') ? QUESTION_BANK : { choice:[], truefalse:[], terminology:[] };
+}
+
+// ============================================================
+// LOCAL STORAGE
+// ============================================================
+function loadFavorites() {
+  try { const raw = localStorage.getItem(STORAGE_FAV); state.favorites = raw ? JSON.parse(raw) : []; } catch (e) { state.favorites = []; }
+}
+function saveFavorites() {
+  try { localStorage.setItem(STORAGE_FAV, JSON.stringify(state.favorites)); } catch (e) {}
+}
+function isFavorite(id) { return state.favorites.includes(id); }
+function toggleFavorite(id) {
+  const idx = state.favorites.indexOf(id);
+  const added = idx < 0;
+  if (idx >= 0) { state.favorites.splice(idx, 1); } else { state.favorites.push(id); }
+  saveFavorites(); updateFavCount();
+  return added;
+}
+/** Highlight the mid-column card matching detail selection (no full re-render). */
+function syncSelectedCard() {
+  const id = (state.selectedDetail && state.selectedDetail.type === 'concept')
+    ? String(state.selectedDetail.id) : null;
+  document.querySelectorAll('.concept-card[data-concept-id]').forEach(function (card) {
+    const on = id !== null && String(card.dataset.conceptId) === id;
+    const wasOn = card.classList.contains('is-selected');
+    if (on && !wasOn) {
+      // retrigger top-bar animation by toggling class cleanly
+      card.classList.remove('is-selected');
+      void card.offsetWidth;
+    }
+    card.classList.toggle('is-selected', on);
+    if (on) card.setAttribute('aria-current', 'true');
+    else card.removeAttribute('aria-current');
+  });
+}
+function updateFavCount() { if (dom.favCount) dom.favCount.textContent = state.favorites.length; }
+
+function loadProgress() {
+  try {
+    const raw = localStorage.getItem(STORAGE_PROGRESS);
+    if (!raw) return;
+    const p = JSON.parse(raw);
+    if (p.sidebarMode === 'knowledge' || p.sidebarMode === 'question') state.sidebarMode = p.sidebarMode;
+    if (typeof p.questionTab === 'string') state.questionTab = p.questionTab;
+    if (p.activeCategoryId !== undefined) state.activeCategoryId = p.activeCategoryId;
+    if (p.activeSubcategoryId !== undefined) state.activeSubcategoryId = p.activeSubcategoryId;
+    if (p.masteryFilter !== undefined) state.masteryFilter = p.masteryFilter;
+    if (p.selectedDetail && typeof p.selectedDetail === 'object') state.selectedDetail = p.selectedDetail;
+    if (Array.isArray(p.expandedCategories)) {
+      state.expandedCategories = new Set(p.expandedCategories.filter(Boolean));
+    }
+    // Do not force-open chapters: collapsed/expanded is exactly what user left
+  } catch (e) {}
+}
+function saveProgress() {
+  try {
+    localStorage.setItem(STORAGE_PROGRESS, JSON.stringify({
+      sidebarMode: state.sidebarMode,
+      questionTab: state.questionTab,
+      activeCategoryId: state.activeCategoryId,
+      activeSubcategoryId: state.activeSubcategoryId,
+      masteryFilter: state.masteryFilter,
+      selectedDetail: state.selectedDetail,
+      expandedCategories: Array.from(state.expandedCategories),
+      updatedAt: Date.now()
+    }));
+  } catch (e) {}
+}
+function syncModeToggleUI() {
+  document.querySelectorAll('.sidebar-mode-btn').forEach(function (b) {
+    b.classList.toggle('active', b.dataset.mode === state.sidebarMode);
+  });
+}
+function resumeStudyFocus() {
+  requestAnimationFrame(function () {
+    const card = document.querySelector('.concept-card.is-selected');
+    if (card) card.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  });
+}
+
+/** Sync all stars for a concept (mid + detail) without full re-render; play pop animation. */
+function syncFavoriteStars(conceptId, animate) {
+  const on = isFavorite('concept_' + conceptId);
+  const nodes = document.querySelectorAll('[data-star-concept="' + conceptId + '"]');
+  nodes.forEach(function (btn) {
+    btn.classList.toggle('favorited', on);
+    btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    btn.title = on ? '取消收藏' : '收藏';
+    if (!animate) return;
+    btn.classList.remove('star-pop', 'star-unpop');
+    void btn.offsetWidth;
+    btn.classList.add(on ? 'star-pop' : 'star-unpop');
+  });
+}
+/** Unified favorite toggle for mid-column cards and detail panel. */
+function handleFavoriteConcept(conceptId) {
+  if (!conceptId) return;
+  const favId = 'concept_' + conceptId;
+  const wasFav = isFavorite(favId);
+  toggleFavorite(favId);
+  const nowFav = isFavorite(favId);
+  // Only re-render main when favorites filter needs the card removed; avoid flash otherwise.
+  if (state.showFavoritesOnly && wasFav && !nowFav) {
+    renderMain();
+  }
+  syncFavoriteStars(conceptId, true);
+}
+
+// Wrong book
+function loadWrongBook() {
+  try { const raw = localStorage.getItem(STORAGE_WRONG); state.wrongBook = raw ? JSON.parse(raw) : []; } catch (e) { state.wrongBook = []; }
+}
+function saveWrongBook() {
+  try { localStorage.setItem(STORAGE_WRONG, JSON.stringify(state.wrongBook)); } catch (e) {}
+}
+function addToWrongBook(qid) {
+  if (!state.wrongBook.includes(qid)) {
+    state.wrongBook.push(qid);
+    saveWrongBook();
+  }
+}
+function removeFromWrongBook(qid) {
+  state.wrongBook = state.wrongBook.filter(id => id !== qid);
+  saveWrongBook();
+}
+function clearWrongBook() {
+  state.wrongBook = [];
+  saveWrongBook();
+  renderAll();
+}
+
+// ============================================================
+// SEARCH
+// ============================================================
+let searchTimer = null;
+
+function syncSearchCollapsedWidth() {
+  if (!dom.searchWrap || !dom.searchTrigger) return;
+  const w = Math.max(72, Math.ceil(dom.searchTrigger.getBoundingClientRect().width));
+  dom.searchWrap.style.setProperty('--search-collapsed', w + 'px');
+}
+
+function expandSearch() {
+  if (!dom.searchWrap || dom.searchWrap.classList.contains('expanded')) return;
+  syncSearchCollapsedWidth();
+  // Force style flush so width transition starts from measured collapsed px (Codrops pattern)
+  void dom.searchWrap.offsetWidth;
+  dom.searchWrap.classList.add('expanded');
+  const ms = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 280;
+  setTimeout(() => { dom.searchInput && dom.searchInput.focus(); }, ms);
+}
+
+function collapseSearch() {
+  if (!dom.searchWrap) return;
+  if (!state.searchQuery && !(dom.searchInput && dom.searchInput.value.trim())) {
+    syncSearchCollapsedWidth();
+    void dom.searchWrap.offsetWidth;
+    dom.searchWrap.classList.remove('expanded');
+  }
+}
+
+function handleSearchInput() {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => {
+    state.searchQuery = dom.searchInput.value.trim();
+    if (state.searchQuery) {
+      dom.searchClear.classList.remove('hidden');
+    } else {
+      dom.searchClear.classList.add('hidden');
+    }
+    renderMain();
+  }, 200);
+}
+
+function handleSearchClear() {
+  state.searchQuery = '';
+  dom.searchInput.value = '';
+  dom.searchClear.classList.add('hidden');
+  renderAll();
+  dom.searchInput.focus();
+  setTimeout(() => collapseSearch(), 200);
+}
+
+// ============================================================
+// FUZZY SEARCH
+// ============================================================
+function fuzzyMatch(text, query) {
+  if (!query) return true;
+  const q = query.toLowerCase();
+  const t = text.toLowerCase();
+  let qi = 0;
+  for (let ti = 0; ti < t.length && qi < q.length; ti++) {
+    if (t[ti] === q[qi]) qi++;
+  }
+  return qi === q.length;
+}
+function conceptMatchesSearch(concept, query) {
+  if (!query) return true;
+  const contentText = (concept.content || '').replace(/<[^>]*>/g, '');
+  return fuzzyMatch(concept.title || '', query) ||
+    fuzzyMatch(concept.summary || '', query) ||
+    fuzzyMatch(contentText, query) ||
+    (concept.tags || []).some(t => fuzzyMatch(t, query));
+}
+function questionMatchesSearch(q, query) {
+  if (!query) return true;
+  return fuzzyMatch(q.stem || q.term || '', query) ||
+    fuzzyMatch((q.options || []).join(' '), query) ||
+    fuzzyMatch(q.explanation || q.fullAnswer || '', query);
+}
+
+// ============================================================
+// FILTERING
+// ============================================================
+function getFilteredConcepts() {
+  const categories = getCategories();
+  let concepts = [];
+  if (state.showFavoritesOnly || state.searchQuery) {
+    for (const cat of categories) {
+      for (const c of (cat.concepts || [])) { concepts.push({ ...c, chapterId: cat.id, chapterName: cat.name }); }
+    }
+  } else if (state.activeCategoryId) {
+    const category = getCategoryById(state.activeCategoryId);
+    if (category) {
+      for (const c of (category.concepts || [])) { concepts.push({ ...c, chapterId: category.id, chapterName: category.name }); }
+    }
+  } else {
+    for (const cat of categories) {
+      for (const c of (cat.concepts || [])) { concepts.push({ ...c, chapterId: cat.id, chapterName: cat.name }); }
+    }
+  }
+  if (state.searchQuery) { concepts = concepts.filter(c => conceptMatchesSearch(c, state.searchQuery)); }
+  if (state.activeSubcategoryId && !state.showFavoritesOnly && !state.searchQuery) {
+    /* 按「章节id/子分类id」唯一 key 过滤，防「跨章节同名/同 id 子分类」全选中；旧产物无 subcategoryKey 时按 subcategory=id 兜底 */
+    const activeKey = state.activeCategoryId + '/' + state.activeSubcategoryId;
+    concepts = concepts.filter(c => (c.subcategoryKey || '') === activeKey || (c.subcategory || '') === state.activeSubcategoryId);
+  }
+  if (state.showFavoritesOnly) { concepts = concepts.filter(c => isFavorite('concept_' + c.id)); }
+  if (state.masteryFilter) { concepts = concepts.filter(c => c.mastery === state.masteryFilter); }
+  return concepts;
+}
+function getFilteredQuestions(type) {
+  const bank = getQuestionBank();
+  let questions = (bank[type] || []).slice();
+  if (state.activeCategoryId) { questions = questions.filter(q => (q.chapter || '') === state.activeCategoryId); }
+  if (state.searchQuery) { questions = questions.filter(q => questionMatchesSearch(q, state.searchQuery)); }
+  if (state.showFavoritesOnly) { questions = questions.filter(q => isFavorite('q_' + q.id)); }
+  return questions;
+}
+
+// ============================================================
+// RENDER: SIDEBAR
+// ============================================================
+function renderSidebar() {
+  if (state.sidebarMode === 'knowledge') { renderKnowledgeSidebar(); }
+  else { renderQuestionSidebar(); }
+}
+function renderKnowledgeSidebar() {
+  if (dom.sidebarTree) dom.sidebarTree.classList.remove('hidden');
+  if (dom.sidebarQuestionTabs) dom.sidebarQuestionTabs.classList.add('hidden');
+  const categories = getCategories();
+  let html = '<div class="sidebar-heading">章节导航</div>';
+  for (const cat of categories) {
+    const isActive = state.activeCategoryId === cat.id;
+    const isExpanded = state.expandedCategories.has(cat.id);
+    const conceptCount = (cat.concepts || []).length;
+    html += '<div class="sidebar-category ' + (isActive ? 'active' : '') + ' ' + (isExpanded ? 'expanded' : '') + '" data-cat-id="' + cat.id + '">';
+    html += '<div class="sidebar-category-header">';
+    html += '<span class="sidebar-arrow">&#9654;</span>';
+    html += '<div class="sidebar-category-info">';
+    html += '<span class="sidebar-icon">' + (cat.icon || '') + '</span>';
+    html += '<span class="sidebar-name">' + cat.name + '</span>';
+    html += '<span class="sidebar-count">' + conceptCount + '</span>';
+    html += '</div></div>';
+    html += '<div class="sidebar-subcategories">';
+    if (cat.subcategories) {
+      for (const sub of cat.subcategories) {
+        const subIsActive = String(state.activeSubcategoryId || '') === String(sub.id || '');
+        html += '<div class="sidebar-subcategory ' + (subIsActive ? 'active' : '') + '" data-sub-id="' + sub.id + '" data-cat-id="' + cat.id + '">';
+        html += '<span>' + sub.name + '</span></div>';
+      }
+    }
+    html += '</div></div>';
+  }
+  if (dom.sidebarTree) dom.sidebarTree.innerHTML = html;
+}
+function renderQuestionSidebar() {
+  if (dom.sidebarTree) dom.sidebarTree.classList.add('hidden');
+  if (dom.sidebarQuestionTabs) dom.sidebarQuestionTabs.classList.remove('hidden');
+  const bank = getQuestionBank();
+  const wbCount = state.wrongBook.length;
+  /* 题型入口动态生成：从题库实际存在的题型生成入口（有几种题型几个入口，0 题自动隐藏） */
+  const TYPE_META = {
+    choice: { label: '选择题', icon: '📋' }, multi: { label: '多选题', icon: '🔢' },
+    truefalse: { label: '判断题', icon: '✅' }, terminology: { label: '名词解释', icon: '📖' },
+    fill: { label: '填空题', icon: '✍️' }, essay: { label: '简答题', icon: '📝' },
+  };
+  const tabs = Object.keys(bank).filter(k => (bank[k] || []).length > 0).map(k => ({ id: k, count: (bank[k] || []).length, ...(TYPE_META[k] || { label: k, icon: '📋' }) }));
+  let html = '<div class="sidebar-heading">题型分类</div>';
+  for (const tab of tabs) {
+    const isActive = state.questionTab === tab.id;
+    html += '<div class="sidebar-qtab ' + (isActive ? 'active' : '') + '" data-qt="' + tab.id + '">';
+    html += '<span class="qtab-icon" aria-hidden="true">' + tab.icon + '</span>';
+    html += '<span class="qtab-label">' + tab.label + '</span>';
+    html += '<span class="qtab-count">' + tab.count + '</span>';
+    html += '</div>';
+  }
+  // Wrong book tab
+  const wbActive = state.questionTab === 'wrongbook';
+  html += '<div class="sidebar-qtab-sep" aria-hidden="true"></div>';
+  html += '<div class="sidebar-qtab sidebar-wrongbook ' + (wbActive ? 'active' : '') + '" data-qt="wrongbook">';
+  html += '<span class="qtab-icon" aria-hidden="true">📕</span><span class="qtab-label">错题本</span>';
+  html += '<span class="qtab-count' + (wbCount > 0 ? ' has-wrong' : '') + '">' + wbCount + '</span>';
+  html += '</div>';
+  if (dom.sidebarQuestionTabs) dom.sidebarQuestionTabs.innerHTML = html;
+}
+
+// ============================================================
+// RENDER: MAIN CONTENT
+// ============================================================
+function renderMain() {
+  if (state.sidebarMode === 'knowledge') { renderMainKnowledge(); }
+  else { renderMainQuestions(); }
+}
+function knowledgeTitleText() {
+  const activeCat = state.activeCategoryId ? getCategoryById(state.activeCategoryId) : null;
+  return activeCat ? activeCat.name : (state.showFavoritesOnly ? '⭐ 收藏的知识点' : (state.searchQuery ? '🔍 搜索结果' : '全部知识点'));
+}
+function buildConceptListHtml(concepts) {
+  if (concepts.length === 0) {
+    return '<div class="empty-state"><div class="empty-state-icon">🔬</div><div class="empty-state-text">没有找到匹配的知识点</div></div>';
+  }
+  let html = '<div class="concept-grid">';
+  for (const c of concepts) {
+    const isFav = isFavorite('concept_' + c.id);
+    const favClass = isFav ? 'favorited' : '';
+    const masterClass = c.mastery === '掌握' ? ' is-master' : (c.mastery === '熟悉' ? ' is-familiar' : (c.mastery === '了解' ? ' is-understand' : ''));
+    const keyClass = c.isKey ? ' is-key' : '';
+    const selClass = (state.selectedDetail && state.selectedDetail.type === 'concept' && String(state.selectedDetail.id) === String(c.id)) ? ' is-selected' : '';
+    const badgeClass = c.mastery === '掌握' ? 'badge-master' : (c.mastery === '熟悉' ? 'badge-familiar' : 'badge-understand');
+    html += '<div class="concept-card' + masterClass + keyClass + selClass + '" data-concept-id="' + c.id + '"' + (selClass ? ' aria-current="true"' : '') + '>';
+    html += '<div class="concept-card-header"><div class="concept-card-title">' + c.title + '</div><span class="concept-card-badge ' + badgeClass + '">' + c.mastery + '</span></div>';
+    html += '<div class="concept-card-summary">' + c.summary + '</div>';
+    html += '<div class="concept-card-footer">';
+    html += '<div class="concept-card-tags">' + (c.tags || []).slice(0, 4).map(t => '<span class="concept-card-tag">' + t + '</span>').join('') + '</div>';
+    html += '<button type="button" class="concept-card-star ' + favClass + '" data-star-concept="' + c.id + '" title="' + (isFav ? '取消收藏' : '收藏') + '" aria-label="收藏" aria-pressed="' + (isFav ? 'true' : 'false') + '">★</button>';
+    html += '</div></div>';
+  }
+  html += '</div>';
+  return html;
+}
+function syncMasteryPill() {
+  const rail = dom.mainContent && dom.mainContent.querySelector('.mastery-filters');
+  if (!rail) return;
+  let pill = rail.querySelector('.mastery-pill');
+  if (!pill) {
+    pill = document.createElement('span');
+    pill.className = 'mastery-pill';
+    pill.setAttribute('aria-hidden', 'true');
+    rail.appendChild(pill);
+  }
+  const active = rail.querySelector('.mastery-tag.active');
+  if (!active) {
+    pill.style.opacity = '0';
+    return;
+  }
+  pill.style.opacity = '1';
+  pill.style.width = active.offsetWidth + 'px';
+  pill.style.transform = 'translateX(' + active.offsetLeft + 'px)';
+}
+function syncMasteryFilterUI() {
+  const rail = dom.mainContent && dom.mainContent.querySelector('.mastery-filters');
+  if (!rail) return;
+  rail.querySelectorAll('.mastery-tag').forEach(function (btn) {
+    const v = btn.dataset.mastery || '';
+    const active = state.masteryFilter ? v === state.masteryFilter : v === '';
+    btn.classList.toggle('active', active);
+  });
+  requestAnimationFrame(syncMasteryPill);
+}
+let knowledgeTransitionLock = false;
+let knowledgeAnimToken = 0;
+function prefersReducedMotion() {
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+function transitionKnowledgeList(concepts) {
+  const root = dom.mainContent;
+  if (!root) return;
+  const token = ++knowledgeAnimToken;
+  const title = root.querySelector('.main-title');
+  const sub = root.querySelector('.main-subtitle');
+  if (title) title.textContent = knowledgeTitleText();
+  if (sub) sub.textContent = '共 ' + concepts.length + ' 个知识点';
+  syncMasteryFilterUI();
+
+  const oldGrid = root.querySelector('.concept-grid');
+  const oldEmpty = root.querySelector('.empty-state');
+  const leavers = oldGrid
+    ? Array.prototype.slice.call(oldGrid.querySelectorAll('.concept-card'))
+    : (oldEmpty ? [oldEmpty] : []);
+
+  const applyNew = function () {
+    if (token !== knowledgeAnimToken) {
+      knowledgeTransitionLock = false;
+      transitionKnowledgeList(getFilteredConcepts());
+      return;
+    }
+    if (oldGrid && oldGrid.parentNode) oldGrid.remove();
+    if (oldEmpty && oldEmpty.parentNode) oldEmpty.remove();
+    const wrap = document.createElement('div');
+    wrap.innerHTML = buildConceptListHtml(getFilteredConcepts());
+    const node = wrap.firstElementChild;
+    if (node) {
+      if (node.classList.contains('concept-grid')) {
+        Array.prototype.forEach.call(node.querySelectorAll('.concept-card'), function (card, i) {
+          card.classList.add('is-entering');
+          card.style.animationDelay = (Math.min(i, 12) * 25) + 'ms';
+        });
+      } else {
+        node.classList.add('is-entering');
+      }
+      root.appendChild(node);
+    }
+    knowledgeTransitionLock = false;
+  };
+
+  if (!leavers.length || prefersReducedMotion()) {
+    applyNew();
+    return;
+  }
+
+  knowledgeTransitionLock = true;
+  leavers.forEach(function (el) { el.classList.add('is-leaving'); });
+  let done = false;
+  const finish = function () {
+    if (done) return;
+    done = true;
+    applyNew();
+  };
+  const timer = setTimeout(finish, 300);
+  leavers[0].addEventListener('transitionend', function onEnd(e) {
+    if (e.target !== leavers[0] || (e.propertyName && e.propertyName !== 'opacity')) return;
+    clearTimeout(timer);
+    leavers[0].removeEventListener('transitionend', onEnd);
+    finish();
+  });
+}
+function renderMainKnowledge(opts) {
+  opts = opts || {};
+  const concepts = getFilteredConcepts();
+  const headerEl = dom.mainContent && dom.mainContent.querySelector('.main-header');
+  const hasShell = !!(headerEl && headerEl.querySelector('.mastery-filters'));
+  const canAnimate = opts.animate !== false && hasShell;
+  if (canAnimate) {
+    transitionKnowledgeList(concepts);
+    return;
+  }
+  let html = '';
+  html += '<div class="main-header">';
+  html += '<div>';
+  html += '<div class="main-title">' + knowledgeTitleText() + '</div>';
+  html += '<div class="main-subtitle">共 ' + concepts.length + ' 个知识点</div>';
+  html += '</div><div class="mastery-filters">';
+  const masteryOptions = [
+    { value: null, label: '全部' },
+    { value: '掌握', label: '掌握', cls: 'mastery-zhangwo' },
+    { value: '熟悉', label: '熟悉', cls: 'mastery-shuxi' },
+    { value: '了解', label: '了解', cls: 'mastery-lejie' },
+  ];
+  for (const opt of masteryOptions) {
+    const isActive = state.masteryFilter === opt.value;
+    html += '<button class="mastery-tag ' + (opt.cls || '') + ' ' + (isActive ? 'active' : '') + '" data-mastery="' + (opt.value || '') + '">' + opt.label + '</button>';
+  }
+  html += '</div></div>';
+  html += buildConceptListHtml(concepts);
+  dom.mainContent.innerHTML = html;
+  requestAnimationFrame(function () {
+    syncMasteryPill();
+    if (opts.enter !== false) {
+      dom.mainContent.querySelectorAll('.concept-card, .empty-state').forEach(function (el, i) {
+        el.classList.add('is-entering');
+        if (el.classList.contains('concept-card')) {
+          el.style.animationDelay = (Math.min(i, 12) * 25) + 'ms';
+        }
+      });
+    }
+  });
+}
+function renderMainQuestions() {
+  let questions, typeLabel;
+  if (state.questionTab === 'wrongbook') {
+    const bank = getQuestionBank();
+    const wb = state.wrongBook;
+    questions = [];
+    for (const t of ['choice', 'truefalse', 'terminology']) {
+      for (const q of (bank[t] || [])) {
+        if (wb.includes(q.id)) {
+          questions.push({ ...q, _type: t });
+        }
+      }
+    }
+    typeLabel = '错题本';
+  } else {
+    questions = getFilteredQuestions(state.questionTab);
+    const tabLabels = { choice: '选择题', truefalse: '判断题', terminology: '名词解释' };
+    typeLabel = tabLabels[state.questionTab] || '题目';
+  }
+  let html = '';
+  html += '<div class="question-list-header">';
+  html += '<div class="main-title">' + typeLabel + '</div>';
+  const wbCount = state.wrongBook.length;
+  html += '<div class="question-stats">共 <span>' + questions.length + '</span> 题';
+  if (state.questionTab === 'wrongbook' && wbCount > 0) {
+    html += ' <button onclick="clearWrongBook()" style="margin-left:12px;padding:4px 12px;border:1px solid #e74c3c;color:#e74c3c;border-radius:12px;font-size:.75rem;cursor:pointer;background:none;">清空错题本</button>';
+  }
+  html += '</div>';
+  html += '</div>';
+  if (questions.length === 0) {
+    html += '<div class="empty-state"><div class="empty-state-icon">📕</div><div class="empty-state-text">' + (state.questionTab === 'wrongbook' ? '错题本为空，刷题后错题会自动收集到这里' : '没有找到匹配的题目') + '</div></div>';
+  } else {
+    // All question types render in the main area
+    const labels = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    for (let i = 0; i < questions.length; i++) {
+      const q = questions[i];
+      const qtype = q._type || state.questionTab;
+      const rmBtn = state.questionTab === 'wrongbook'
+        ? '<button onclick="event.stopPropagation();removeFromWrongBook(\'' + q.id + '\');renderSidebar();renderMain();" style="margin-top:8px;padding:4px 12px;background:none;border:1px solid #e74c3c;color:#e74c3c;border-radius:12px;cursor:pointer;font-size:.75rem;">✕ 从错题本移除</button>' : '';
+
+      if (qtype === 'choice') {
+        const aIdx = (typeof q.answer === 'number' && q.answer >= 0 && q.answer < (q.options || []).length) ? q.answer : 0;
+        html += '<div class="question-item" data-qid="' + q.id + '" data-qtype="choice">';
+        html += '<div class="question-stem"><span class="question-number">' + (i + 1) + '.</span> ' + q.stem + '</div>';
+        html += '<div class="question-options">';
+        for (let j = 0; j < (q.options || []).length; j++) {
+          html += '<span class="question-option" data-opt="' + j + '">' + labels[j] + '. ' + q.options[j] + '</span>';
+        }
+        html += '</div>';
+        html += '<div class="question-answer-reveal"><strong>答案：' + labels[aIdx] + '. ' + (q.options[aIdx] || '') + '</strong><br>📖 ' + (q.explanation || '') + '</div>';
+        html += rmBtn;
+        html += '</div>';
+      } else if (qtype === 'truefalse') {
+        html += '<div class="question-item" data-qid="' + q.id + '" data-qtype="truefalse">';
+        html += '<div class="question-stem"><span class="question-number">' + (i + 1) + '.</span> ' + q.stem + '</div>';
+        html += '<div class="question-tf">';
+        html += '<button class="question-tf-btn tf-true" data-opt="0">✓ 正确</button>';
+        html += '<button class="question-tf-btn tf-false" data-opt="1">✗ 错误</button>';
+        html += '</div>';
+        html += '<div class="question-answer-reveal"><strong>答案：' + (q.answer === '对' ? '✓ 正确' : '✗ 错误') + '</strong><br>📖 ' + (q.explanation || '') + '</div>';
+        html += rmBtn;
+        html += '</div>';
+      } else if (qtype === 'terminology') {
+        html += '<div class="terminology-item" data-qid="' + q.id + '" data-qtype="terminology">';
+        html += '<div class="terminology-term">📖 ' + (q.term || q.stem || '术语') + '</div>';
+        html += '<div class="terminology-hint">👆 点击显示答案</div>';
+        html += '<div class="terminology-answer"><strong>答案：</strong><br>' + (q.fullAnswer || q.explanation || '') + '</div>';
+        html += rmBtn;
+        html += '</div>';
+      } else if (qtype === 'fill') {
+        html += '<div class="terminology-item" data-qid="' + q.id + '" data-qtype="fill">';
+        html += '<div class="terminology-term">✍️ ' + q.stem + '</div>';
+        html += '<div class="terminology-hint">👆 点击显示答案</div>';
+        html += '<div class="terminology-answer"><strong>答案：</strong><br>' + (q.answer || '') + '</div>';
+        html += rmBtn;
+        html += '</div>';
+      } else if (qtype === 'essay') {
+        html += '<div class="terminology-item" data-qid="' + q.id + '" data-qtype="essay">';
+        html += '<div class="terminology-term">📝 ' + q.stem + '</div>';
+        html += '<div class="terminology-hint">👆 点击显示答案要点</div>';
+        html += '<div class="terminology-answer"><strong>答案要点：</strong><br>' + (q.answer || '') + '</div>';
+        html += rmBtn;
+        html += '</div>';
+      } else if (qtype === 'multi') {
+        html += '<div class="question-item" data-qid="' + q.id + '" data-qtype="multi">';
+        html += '<div class="question-stem"><span class="question-number">' + (i + 1) + '.</span> ' + q.stem + '<span style="font-size:.7rem;color:var(--text-muted);margin-left:6px;">（多选）</span></div>';
+        html += '<div class="question-options multi-opts">';
+        for (let j = 0; j < (q.options || []).length; j++) {
+          html += '<label class="multi-opt"><input type="checkbox" value="' + j + '"><span>' + labels[j] + '. ' + q.options[j] + '</span></label>';
+        }
+        html += '</div>';
+        html += '<div class="quiz-actions"><button class="btn-secondary btn-check-multi" data-qid="' + q.id + '">✅ 提交答案</button></div>';
+        html += '<div class="question-answer-reveal"><strong>答案：</strong>' + (Array.isArray(q.answer) ? q.answer.map(a => labels[a] + '. ' + (q.options[a] || '')).join('、') : '') + '</div>';
+        html += rmBtn;
+        html += '</div>';
+      }
+    }
+  }
+  dom.mainContent.innerHTML = html;
+}
+
+// ============================================================
+// RENDER: DETAIL PANEL
+// ============================================================
+function renderDetailPanel() {
+  if (!state.selectedDetail) {
+    dom.detailTitle.textContent = '详情';
+    dom.detailBody.innerHTML = '<div class="app-detail-empty">点击知识点或题目查看详情</div>';
+    if (dom.detailStar) { dom.detailStar.style.display = 'none'; }
+    if (window.innerWidth <= 1024) {
+      dom.appDetail.classList.remove('show');
+      dom.detailOverlay.style.display = 'none';
+    }
+    syncSelectedCard();
+    return;
+  }
+  const { type, id } = state.selectedDetail;
+  if (type === 'concept') {
+    const concept = getConceptById(id);
+    if (!concept) { closeDetail(); return; }
+    dom.detailTitle.textContent = concept.title;
+    if (dom.detailStar) {
+      dom.detailStar.style.display = 'flex';
+      dom.detailStar.dataset.starConcept = concept.id;
+      const on = isFavorite('concept_' + concept.id);
+      dom.detailStar.classList.toggle('favorited', on);
+      dom.detailStar.classList.remove('star-pop', 'star-unpop');
+      if (!dom.detailStar.classList.contains('concept-card-star')) {
+        dom.detailStar.classList.add('concept-card-star');
+      }
+      dom.detailStar.setAttribute('aria-pressed', on ? 'true' : 'false');
+      dom.detailStar.title = on ? '取消收藏' : '收藏';
+    }
+    let html = '';
+    const badgeClass = concept.mastery === '掌握' ? 'badge-master' : (concept.mastery === '熟悉' ? 'badge-familiar' : 'badge-understand');
+    html += '<span class="concept-card-badge ' + badgeClass + '" style="font-size:0.75rem;padding:4px 12px;">' + concept.mastery + '</span>';
+    html += '<div style="margin-top:12px;">' + concept.content + '</div>';
+    html += '<div style="margin-top:12px;display:flex;gap:6px;flex-wrap:wrap;">' + (concept.tags || []).map(t => '<span class="concept-card-tag">' + t + '</span>').join('') + '</div>';
+    html += '<div style="margin-top:8px;font-size:0.8rem;color:var(--text-muted);">' + concept.chapterName + ' / ' + (concept.subcategoryName || concept.subcategory || '') + '</div>';
+    // Related questions
+    const bank = getQuestionBank();
+    let relatedQs = [];
+    for (const t of ['choice', 'truefalse', 'terminology']) {
+      for (const q of (bank[t] || [])) {
+        if ((q.cardId || q.relatedCardId || '') === concept.id) {
+          relatedQs.push({ ...q, _type: t });
+        }
+      }
+    }
+    if (relatedQs.length > 0) {
+      html += '<div class="app-detail-section"><div class="app-detail-section-title">📝 相关题目 (' + relatedQs.length + ')</div>';
+      for (const rq of relatedQs.slice(0, 5)) {
+        html += '<a class="detail-related-link" data-qid="' + rq.id + '" data-qtype="' + rq._type + '">' + (rq.stem || rq.term || rq.id) + '</a>';
+      }
+      if (relatedQs.length > 5) html += '<div style="font-size:0.75rem;color:var(--text-muted);">还有 ' + (relatedQs.length - 5) + ' 道相关题目...</div>';
+      html += '</div>';
+    }
+    dom.detailBody.innerHTML = html;
+  } else if (type === 'question') {
+    const bank = getQuestionBank();
+    const qtype = state.selectedDetail.qtype || 'choice';
+    const questions = bank[qtype] || [];
+    const q = questions.find(q => q.id === id);
+    if (!q) { closeDetail(); return; }
+    if (dom.detailStar) { dom.detailStar.style.display = 'none'; }
+    dom.detailTitle.textContent = q.stem || q.term || '题目详情';
+    const hasHistory = state.detailHistory.length > 0;
+    let html = '';
+    if (qtype === 'choice') {
+      const labels = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      html += '<p style="font-weight:600;margin-bottom:10px;">' + q.stem + '</p>';
+      for (let j = 0; j < (q.options || []).length; j++) {
+        const correct = j === q.answer;
+        html += '<div style="padding:8px 12px;margin-bottom:4px;border-radius:4px;border:1px solid #e0e6ed;color:' + (correct ? 'var(--color-correct)' : 'var(--text-light)') + ';font-weight:' + (correct ? '700' : '400') + ';background:' + (correct ? '#eafaf1' : '#fafbfc') + '">' + labels[j] + '. ' + q.options[j] + (correct ? ' ✓' : '') + '</div>';
+      }
+      html += '<div class="app-detail-section"><div class="app-detail-section-title">📖 解析</div><p style="font-size:0.88rem;line-height:1.7;">' + (q.explanation || '暂无解析') + '</p></div>';
+    } else if (qtype === 'truefalse') {
+      html += '<p style="font-weight:600;margin-bottom:10px;">' + q.stem + '</p>';
+      html += '<p style="color:' + (q.answer === '对' ? 'var(--color-correct)' : 'var(--color-wrong)') + ';font-weight:700;font-size:1.1rem;">答案：' + (q.answer === '对' ? '✓ 正确' : '✗ 错误') + '</p>';
+      html += '<div class="app-detail-section"><div class="app-detail-section-title">📖 解析</div><p style="font-size:0.88rem;line-height:1.7;">' + (q.explanation || '暂无解析') + '</p></div>';
+    } else if (qtype === 'terminology') {
+      html += '<h3 style="color:var(--color-primary);margin-bottom:10px;">' + (q.term || '术语') + '</h3>';
+      html += '<div class="app-detail-section"><div class="app-detail-section-title">📖 解释</div><p style="font-size:0.88rem;line-height:1.7;">' + (q.fullAnswer || q.explanation || '') + '</p></div>';
+    }
+    // Back button at bottom if navigated from a concept
+    if (hasHistory) {
+      html += '<div style="margin-top:20px;padding-top:12px;border-top:1px solid #e0e6ed;"><button class="detail-back-btn">← 返回知识点</button></div>';
+    }
+    dom.detailBody.innerHTML = html;
+  }
+  if (window.innerWidth <= 1024) {
+    dom.appDetail.classList.add('show');
+    dom.detailOverlay.style.display = 'block';
+  }
+  syncSelectedCard();
+}
+function closeDetail() {
+  state.selectedDetail = null;
+  state.detailHistory = [];
+  dom.detailTitle.textContent = '详情';
+  dom.detailBody.innerHTML = '<div class="app-detail-empty">点击知识点或题目查看详情</div>';
+  if (dom.detailStar) { dom.detailStar.style.display = 'none'; }
+  if (window.innerWidth <= 1024) {
+    dom.appDetail.classList.remove('show');
+    dom.detailOverlay.style.display = 'none';
+  }
+  syncSelectedCard();
+}
+
+// ============================================================
+// QUIZ MODAL
+// ============================================================
+function openQuizModal() {
+  dom.quizModalTitle.textContent = '刷题模式';
+  dom.quizModalBody.innerHTML = '<div class="form-group"><label class="form-label">题目数量</label><input type="number" class="form-input" id="quizCount" value="20" min="1" max="200"></div><div class="form-group"><label class="form-label">题目类型</label><div class="checkbox-group"><label class="checkbox-label"><input type="checkbox" value="choice" checked> 选择题</label><label class="checkbox-label"><input type="checkbox" value="truefalse" checked> 判断题</label><label class="checkbox-label"><input type="checkbox" value="terminology"> 名词解释</label></div></div>';
+  dom.quizModalFooter.innerHTML = '<button class="btn-secondary" id="quizModalCancel">取消</button><button class="btn-primary" id="quizModalStart">开始答题</button>';
+  dom.quizModalOverlay.classList.add('show');
+  document.getElementById('quizModalCancel').onclick = closeQuizModal;
+  document.getElementById('quizModalStart').onclick = startQuiz;
+}
+function closeQuizModal() {
+  dom.quizModalOverlay.classList.remove('show');
+  state.quizState = null;
+}
+function startQuiz() {
+  const count = parseInt(document.getElementById('quizCount').value) || 20;
+  const types = [];
+  document.querySelectorAll('#quizModalBody input[type="checkbox"]:checked').forEach(cb => types.push(cb.value));
+  if (types.length === 0) { alert('请选择至少一种题型'); return; }
+  const bank = getQuestionBank();
+  let pool = [];
+  for (const t of types) {
+    if (bank[t]) pool = pool.concat(bank[t].map(q => ({ ...q, _type: t })));
+  }
+  pool = pool.sort(() => Math.random() - 0.5).slice(0, Math.min(count, pool.length));
+  state.quizState = { questions: pool, currentIndex: 0, answers: [], finished: false };
+  showQuizQuestion();
+}
+function showQuizQuestion() {
+  const qs = state.quizState;
+  if (qs.currentIndex >= qs.questions.length) { showQuizResult(); return; }
+  const q = qs.questions[qs.currentIndex];
+  const progress = ((qs.currentIndex) / qs.questions.length * 100);
+  dom.quizModalTitle.textContent = '刷题模式 (' + (qs.currentIndex + 1) + '/' + qs.questions.length + ')';
+  let bodyHtml = '<div class="quiz-progress"><div class="quiz-progress-bar" style="width:' + progress + '%"></div></div>';
+  bodyHtml += '<div class="quiz-question"><div class="quiz-question-stem">' + (qs.currentIndex + 1) + '. ' + (q.stem || q.term) + '</div>';
+  if (q._type === 'choice') {
+    const labels = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    bodyHtml += '<div class="question-options">';
+    for (let j = 0; j < (q.options || []).length; j++) {
+      bodyHtml += '<button class="question-option quiz-opt" data-opt="' + j + '" style="text-align:left;width:100%;">' + labels[j] + '. ' + q.options[j] + '</button>';
+    }
+    bodyHtml += '</div>';
+  } else if (q._type === 'truefalse') {
+    bodyHtml += '<div class="question-tf"><button class="question-tf-btn tf-true quiz-opt" data-opt="0" style="flex:1;">✓ 正确</button><button class="question-tf-btn tf-false quiz-opt" data-opt="1" style="flex:1;">✗ 错误</button></div>';
+  } else if (q._type === 'terminology') {
+    bodyHtml += '<div style="margin-bottom:10px;font-size:0.85rem;color:var(--text-muted);">名词解释题 — 先回忆，再查看答案</div>';
+    bodyHtml += '<button class="btn-secondary quiz-opt" data-opt="0" style="width:100%;">📖 显示答案</button>';
+    bodyHtml += '<div id="quizTermAnswer" style="margin-top:10px;display:none;padding:12px;background:#fefdf0;border-left:3px solid var(--color-familiar);border-radius:var(--radius-sm);font-size:0.88rem;line-height:1.7;">' + (q.fullAnswer || q.explanation || '') + '</div>';
+  }
+  bodyHtml += '<div id="quizFeedback" style="margin-top:10px;"></div></div>';
+  dom.quizModalBody.innerHTML = bodyHtml;
+  dom.quizModalFooter.innerHTML = '<span style="font-size:0.85rem;color:var(--text-muted);">' + (qs.currentIndex + 1) + ' / ' + qs.questions.length + '</span><button class="btn-secondary" id="quizSkip">跳过</button><button class="btn-primary hidden" id="quizNext">下一题</button>';
+  document.getElementById('quizSkip').onclick = () => {
+    state.quizState.answers.push(null);
+    state.quizState.currentIndex++;
+    showQuizQuestion();
+  };
+  document.querySelectorAll('.quiz-opt').forEach(opt => {
+    opt.onclick = function() {
+      if (q._type === 'terminology') {
+        const answerDiv = document.getElementById('quizTermAnswer');
+        if (answerDiv) answerDiv.style.display = 'block';
+        // For terminology, user self-assesses
+        state.quizState.answers.push(null); // null = self-assessed
+        document.getElementById('quizSkip').classList.add('hidden');
+        const nextBtn = document.getElementById('quizNext');
+        nextBtn.classList.remove('hidden');
+        nextBtn.onclick = () => { state.quizState.currentIndex++; showQuizQuestion(); };
+        // Add self-assess buttons
+        const fb = document.getElementById('quizFeedback');
+        fb.innerHTML = '<div style="margin-top:12px;display:flex;gap:10px;justify-content:center;"><span style="font-size:0.85rem;color:var(--text-muted);margin-right:8px;">自我评估：</span><button class="btn-secondary" id="quizSelfCorrect" style="padding:6px 16px;font-size:.8rem;">✓ 答对了</button><button class="btn-secondary" id="quizSelfWrong" style="padding:6px 16px;font-size:.8rem;">✗ 答错了</button></div>';
+        document.getElementById('quizSelfCorrect').onclick = () => {
+          const idx = qs.answers.length - 1;
+          if (idx >= 0) qs.answers[idx] = true;
+        };
+        document.getElementById('quizSelfWrong').onclick = () => {
+          const idx = qs.answers.length - 1;
+          if (idx >= 0) { qs.answers[idx] = false; addToWrongBook(q.id); }
+        };
+        return;
+      }
+      const chosen = parseInt(this.dataset.opt);
+      const correct = q._type === 'choice' ? q.answer : (q.answer === '对' ? 0 : 1);
+      const isCorrect = chosen === correct;
+      state.quizState.answers.push(isCorrect);
+      if (!isCorrect) addToWrongBook(q.id);
+      document.querySelectorAll('.quiz-opt').forEach(o => {
+        const val = parseInt(o.dataset.opt);
+        if (val === correct) o.classList.add('selected-correct');
+        if (val === chosen && !isCorrect) o.classList.add('selected-wrong');
+        o.style.pointerEvents = 'none';
+      });
+      const fb = document.getElementById('quizFeedback');
+      const fbIdx = (typeof q.answer === 'number' && q.answer >= 0 && q.answer < (q.options || []).length) ? q.answer : 0;
+      fb.innerHTML = '<div class="quiz-feedback ' + (isCorrect ? 'correct' : 'wrong') + '"><strong>' + (isCorrect ? '✓ 正确！' : ('✗ 错误！正确答案是 ' + (q._type === 'choice' ? ('ABCDEFGH'[fbIdx] || '?') + '. ' + (q.options[fbIdx] || '') : (q.answer === '对' ? '正确' : '错误')))) + '</strong><br>📖 ' + (q.explanation || '') + '</div>';
+      document.getElementById('quizSkip').classList.add('hidden');
+      const nextBtn = document.getElementById('quizNext');
+      nextBtn.classList.remove('hidden');
+      nextBtn.onclick = () => { state.quizState.currentIndex++; showQuizQuestion(); };
+    };
+  });
+}
+function showQuizResult() {
+  const qs = state.quizState;
+  const total = qs.answers.length;
+  // Only count non-null answers for terminology self-assessed
+  const correct = qs.answers.filter(a => a === true).length;
+  const selfAssessed = qs.answers.filter(a => a === null).length;
+  const effective = total - selfAssessed;
+  const pct = effective > 0 ? Math.round(correct / effective * 100) : 0;
+  dom.quizModalTitle.textContent = '答题结果';
+  let feedback = pct >= 80 ? '🌟 优秀！知识点掌握得很好！' : (pct >= 60 ? '👍 良好，继续加油！' : '📚 需要加强复习哦！');
+  dom.quizModalBody.innerHTML = '<div class="quiz-score"><div class="quiz-score-value">' + correct + '/' + effective + '</div><div class="quiz-score-label">正确率 ' + pct + '%</div><div style="margin-top:12px;font-size:0.9rem;color:var(--text-light);">' + feedback + (selfAssessed > 0 ? '<br><span style="font-size:0.8rem;color:var(--text-muted);">（' + selfAssessed + ' 道名词解释为自我评估）</span>' : '') + '</div></div>';
+  dom.quizModalFooter.innerHTML = '<button class="btn-secondary" id="quizRetry">再来一次</button><button class="btn-primary" id="quizClose">关闭</button>';
+  document.getElementById('quizRetry').onclick = () => { state.quizState = null; openQuizModal(); };
+  document.getElementById('quizClose').onclick = closeQuizModal;
+  // Refresh sidebar to update wrong book count
+  renderSidebar();
+}
+
+// ============================================================
+// EVENT HANDLERS
+// ============================================================
+let searchTimeout = null;
+function handleSearchInput() {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    state.searchQuery = dom.searchInput.value.trim();
+    if (state.searchQuery) { dom.searchClear.classList.remove('hidden'); }
+    else { dom.searchClear.classList.add('hidden'); }
+    renderAll();
+  }, 200);
+}
+function handleSearchClear() {
+  dom.searchInput.value = '';
+  state.searchQuery = '';
+  dom.searchClear.classList.add('hidden');
+  renderAll();
+  dom.searchInput.focus();
+  setTimeout(() => collapseSearch(), 200);
+}
+function handleFavoritesToggle() {
+  state.showFavoritesOnly = !state.showFavoritesOnly;
+  if (dom.btnFavorites) dom.btnFavorites.classList.toggle('active', state.showFavoritesOnly);
+  renderAll();
+}
+function handleSidebarClick(e) {
+  const target = e.target;
+  const header = target.closest('.sidebar-category-header');
+  if (header) {
+    const catDiv = header.closest('.sidebar-category');
+    const catId = catDiv.dataset.catId;
+    if (state.expandedCategories.has(catId)) state.expandedCategories.delete(catId);
+    else state.expandedCategories.add(catId);
+    state.activeCategoryId = catId;
+    state.activeSubcategoryId = null;
+    state.showFavoritesOnly = false;
+    if (dom.btnFavorites) dom.btnFavorites.classList.remove('active');
+    renderAll();
+    return;
+  }
+  const sub = target.closest('.sidebar-subcategory');
+  if (sub) {
+    e.stopPropagation();
+    state.activeCategoryId = sub.dataset.catId;
+    state.activeSubcategoryId = sub.dataset.subId;
+    if (state.activeCategoryId) state.expandedCategories.add(state.activeCategoryId);
+    state.showFavoritesOnly = false;
+    if (dom.btnFavorites) dom.btnFavorites.classList.remove('active');
+    renderAll();
+    return;
+  }
+  const qtab = target.closest('.sidebar-qtab');
+  if (qtab) {
+    state.questionTab = qtab.dataset.qt;
+    if (state.questionTab === 'wrongbook') {
+      state.activeCategoryId = null;
+    }
+    renderAll();
+    return;
+  }
+}
+function handleMainClick(e) {
+  const starBtn = e.target.closest('[data-star-concept]');
+  if (starBtn) { e.stopPropagation(); handleFavoriteConcept(starBtn.dataset.starConcept); return; }
+  const card = e.target.closest('.concept-card');
+  if (card) { state.selectedDetail = { type: 'concept', id: card.dataset.conceptId }; state.detailHistory = []; renderDetailPanel(); return; }
+  const opt = e.target.closest('.question-option');
+  if (opt && !opt.classList.contains('quiz-opt')) {
+    const qItem = opt.closest('.question-item');
+    const qid = qItem.dataset.qid;
+    const chosen = parseInt(opt.dataset.opt);
+    const bank = getQuestionBank();
+    const q = (bank.choice || []).find(q => q.id === qid);
+    if (!q) return;
+    const allOpts = qItem.querySelectorAll('.question-option');
+    const correct = q.answer;
+    allOpts.forEach(o => {
+      const val = parseInt(o.dataset.opt);
+      if (val === correct) o.classList.add('selected-correct');
+      if (val === chosen && chosen !== correct) o.classList.add('selected-wrong');
+      o.style.pointerEvents = 'none';
+    });
+    const reveal = qItem.querySelector('.question-answer-reveal');
+    if (reveal) reveal.classList.add('show');
+    return;
+  }
+  const tfBtn = e.target.closest('.question-tf-btn');
+  if (tfBtn) {
+    const qItem = tfBtn.closest('.question-item');
+    const qid = qItem.dataset.qid;
+    const chosen = parseInt(tfBtn.dataset.opt) === 0;
+    const bank = getQuestionBank();
+    const q = (bank.truefalse || []).find(q => q.id === qid);
+    if (!q) return;
+    const allTf = qItem.querySelectorAll('.question-tf-btn');
+    allTf.forEach(b => {
+      const val = parseInt(b.dataset.opt) === 0;
+      if (val === q.answer) b.classList.add('selected-correct');
+      if (val === chosen && chosen !== q.answer) b.classList.add('selected-wrong');
+      b.style.pointerEvents = 'none';
+    });
+    const reveal = qItem.querySelector('.question-answer-reveal');
+    if (reveal) reveal.classList.add('show');
+    return;
+  }
+  const termItem = e.target.closest('.terminology-item');
+  if (termItem) {
+    const answer = termItem.querySelector('.terminology-answer');
+    if (answer) answer.classList.toggle('show');
+    return;
+  }
+  const checkBtn = e.target.closest('.btn-check-multi');
+  if (checkBtn) {
+    const qItem = checkBtn.closest('.question-item');
+    const bank = getQuestionBank();
+    const q = (bank.multi || []).find(q => q.id === qItem.dataset.qid);
+    if (!q) return;
+    const checked = Array.from(qItem.querySelectorAll('.multi-opt input:checked')).map(i => parseInt(i.value)).sort();
+    const correct = (q.answer || []).slice().sort();
+    const isCorrect = JSON.stringify(checked) === JSON.stringify(correct);
+    qItem.querySelectorAll('.multi-opt').forEach(o => {
+      const val = parseInt(o.querySelector('input').value);
+      if (correct.includes(val)) o.classList.add('selected-correct');
+      if (checked.includes(val) && !correct.includes(val)) o.classList.add('selected-wrong');
+      o.querySelector('input').disabled = true;
+    });
+    const reveal = qItem.querySelector('.question-answer-reveal');
+    if (reveal) reveal.classList.add('show');
+    checkBtn.disabled = true;
+    return;
+  }
+    const mtag = e.target.closest('.mastery-tag');
+  if (mtag) {
+    const next = mtag.dataset.mastery || null;
+    if ((state.masteryFilter || null) === next) return;
+    state.masteryFilter = next;
+    saveProgress();
+    renderMainKnowledge({ animate: true });
+    return;
+  }
+  const relLink = e.target.closest('.detail-related-link');
+  if (relLink) {
+    // Save current concept to history before navigating to question
+    if (state.selectedDetail && state.selectedDetail.type === 'concept') {
+      state.detailHistory.push({ ...state.selectedDetail });
+    }
+    state.selectedDetail = { type: 'question', id: relLink.dataset.qid, qtype: relLink.dataset.qtype };
+    renderDetailPanel();
+    return;
+  }
+  // Back button in detail panel
+  const backBtn = e.target.closest('.detail-back-btn');
+  if (backBtn) {
+    if (state.detailHistory.length > 0) {
+      state.selectedDetail = state.detailHistory.pop();
+    } else {
+      state.selectedDetail = null;
+    }
+    renderDetailPanel();
+    return;
+  }
+}
+function handleModeToggle(e) {
+  const btn = e.target.closest('.sidebar-mode-btn');
+  if (!btn) return;
+  state.sidebarMode = btn.dataset.mode;
+  state.activeCategoryId = null;
+  state.activeSubcategoryId = null;
+  state.masteryFilter = null;
+  state.selectedDetail = null;
+  state.showFavoritesOnly = false;
+  if (dom.btnFavorites) dom.btnFavorites.classList.remove('active');
+  document.querySelectorAll('.sidebar-mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === state.sidebarMode));
+  renderAll();
+}
+function toggleMobileSidebar() {
+  state.sidebarOpen = !state.sidebarOpen;
+  if (state.sidebarOpen) {
+    dom.sidebar.classList.add('show');
+    dom.sidebarOverlay.classList.add('show');
+    document.body.style.overflow = 'hidden';
+  } else {
+    closeMobileSidebar();
+  }
+}
+function closeMobileSidebar() {
+  state.sidebarOpen = false;
+  dom.sidebar.classList.remove('show');
+  dom.sidebarOverlay.classList.remove('show');
+  document.body.style.overflow = '';
+}
+function handleDetailClose() { closeDetail(); }
+function handleDetailStar(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  const starBtn = e.target.closest('[data-star-concept]');
+  if (starBtn) { handleFavoriteConcept(starBtn.dataset.starConcept); }
+}
+function handleWindowResize() {
+  if (window.innerWidth > 1024) {
+    dom.appDetail.classList.remove('show');
+    dom.detailOverlay.style.display = 'none';
+    dom.sidebar.classList.remove('show');
+    dom.sidebarOverlay.classList.remove('show');
+    document.body.style.overflow = '';
+    state.sidebarOpen = false;
+  }
+}
+
+// ============================================================
+// RENDER ALL
+// ============================================================
+function renderAll() {
+  renderSidebar();
+  renderMain();
+  if (state.selectedDetail) { renderDetailPanel(); }
+  else { if (window.innerWidth <= 1024) { dom.appDetail.classList.remove('show'); dom.detailOverlay.style.display = 'none'; } }
+  updateFavCount();
+  saveProgress();
+}
+
+// ============================================================
+// INITIALIZATION
+// ============================================================
+function init() {
+  initDom();
+  loadFavorites();
+  loadWrongBook();
+  loadProgress();
+  syncModeToggleUI();
+  updateFavCount();
+  if (dom.sidebarTree) dom.sidebarTree.addEventListener('click', handleSidebarClick);
+  if (dom.sidebarQuestionTabs) dom.sidebarQuestionTabs.addEventListener('click', handleSidebarClick);
+  if (dom.mainContent) dom.mainContent.addEventListener('click', handleMainClick);
+  if (dom.detailBody) dom.detailBody.addEventListener('click', handleMainClick);
+  // Search events
+  if (dom.searchInput) dom.searchInput.addEventListener('input', handleSearchInput);
+  if (dom.searchClear) dom.searchClear.addEventListener('click', handleSearchClear);
+  if (dom.searchTrigger) dom.searchTrigger.addEventListener('click', expandSearch);
+  syncSearchCollapsedWidth();
+  window.addEventListener('resize', syncSearchCollapsedWidth);
+  if (dom.searchInput) dom.searchInput.addEventListener('blur', function(e) {
+    const related = e.relatedTarget;
+    if (related && related.closest('#searchWrap')) return;
+    if (state.searchQuery || dom.searchInput.value.trim()) return;
+    setTimeout(() => collapseSearch(), 200);
+  });
+  if (dom.searchInput) dom.searchInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && !state.searchQuery) {
+      dom.searchInput.value = '';
+      dom.searchWrap.classList.remove('expanded');
+      dom.searchInput.blur();
+    }
+  });
+  // Other events
+  if (dom.btnFavorites) dom.btnFavorites.addEventListener('click', handleFavoritesToggle);
+  if (dom.btnHamburger) dom.btnHamburger.addEventListener('click', toggleMobileSidebar);
+  if (dom.sidebarOverlay) dom.sidebarOverlay.addEventListener('click', closeMobileSidebar);
+  if (dom.detailOverlay) dom.detailOverlay.addEventListener('click', closeDetail);
+  if (dom.btnQuiz) dom.btnQuiz.addEventListener('click', openQuizModal);
+  if (dom.detailClose) dom.detailClose.addEventListener('click', handleDetailClose);
+  if (dom.detailBack) dom.detailBack.addEventListener('click', handleDetailClose);
+  if (dom.detailStar) dom.detailStar.addEventListener('click', handleDetailStar);
+  if (dom.quizModalClose) dom.quizModalClose.addEventListener('click', closeQuizModal);
+  if (dom.quizModalOverlay) dom.quizModalOverlay.addEventListener('click', function(e) { if (e.target === dom.quizModalOverlay) closeQuizModal(); });
+  if (dom.sidebarModeToggle) dom.sidebarModeToggle.addEventListener('click', handleModeToggle);
+  const sidebarClose = document.getElementById('sidebarClose');
+  if (sidebarClose) sidebarClose.addEventListener('click', closeMobileSidebar);
+  // Global keyboard shortcuts
+  document.addEventListener('keydown', function(e) {
+    // Ctrl+K or / to focus search
+    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+      e.preventDefault();
+      expandSearch();
+    }
+    if (e.key === '/' && !e.ctrlKey && !e.metaKey && document.activeElement === document.body) {
+      e.preventDefault();
+      expandSearch();
+    }
+    // Escape: quiz > detail > sidebar > search
+    if (e.key === 'Escape') {
+      if (state.quizState) { closeQuizModal(); return; }
+      if (state.selectedDetail) { closeDetail(); return; }
+      if (state.sidebarOpen) { closeMobileSidebar(); return; }
+      if (state.searchQuery) { handleSearchClear(); return; }
+    }
+  });
+  window.addEventListener('resize', handleWindowResize);
+  window.addEventListener('resize', syncMasteryPill);
+  window.addEventListener('beforeunload', saveProgress);
+  renderAll();
+  resumeStudyFocus();
+}
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>

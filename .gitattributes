@@ -1,0 +1,24 @@
+# 统一换行：文本文件在仓库中以 LF 存储，避免跨平台差异与脚本执行失败
+* text=auto
+
+# 需跨平台执行的脚本与结构化文本，强制 LF
+*.sh    text eol=lf
+*.py    text eol=lf
+*.js    text eol=lf
+*.json  text eol=lf
+*.md    text eol=lf
+*.css   text eol=lf
+*.html  text eol=lf
+
+# 二进制文件不做换行转换
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.ico   binary
+*.woff  binary
+*.woff2 binary
+*.ttf   binary
+*.otf   binary
+*.pdf   binary
+*.zip   binary
