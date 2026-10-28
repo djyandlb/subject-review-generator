@@ -54,6 +54,39 @@ let total = 0
       if (!hasContent) {
         fails.push({ k: k.id, tag: tag, why: '空标记（「' + m[0] + '」后无内容）——只写了标记头没填实际内容' })
       }
+      /* 5. 对比表标题：解析器按 vs / 与 切列名，标题里不能混进说明性括号，
+       *    且列名段数必须与数据列数一致（含首列「对比项」），否则表头错列。 */
+      if (tag === '对比表') {
+        const parenBad = /[（(]/.test(title)
+        if (parenBad) {
+          fails.push({
+            k: k.id, tag: '对比表',
+            why: '标题含括号（「' + title + '」）——列名按 vs/与 切分，括号里的 vs/与 会被当成列名来源，表头会错列。标题只写「甲 vs 乙」，说明并进正文'
+          })
+        }
+        const sides = title.split(/\s*(?:vs\.?|VS|与)\s*/).map(x => x.trim()).filter(Boolean)
+        let maxCols = 0
+        block.split(/\r?\n/).forEach(line => {
+          const t = line.trim()
+          if (!t) return
+          const cols = t.replace(/^[-*]\s*/, '').split('|').length
+          if (cols > maxCols) maxCols = cols
+        })
+        /* 标题带括号时切分结果本身不可信，列名比对不再重复报一次 */
+        if (!parenBad) {
+          if (maxCols > 1 && sides.length < 2) {
+            fails.push({
+              k: k.id, tag: '对比表',
+              why: '标题切不出两段对象（当前「' + title + '」）——列名只能兜底成「对象1/对象2」'
+            })
+          } else if (maxCols > 1 && sides.length > 1 && maxCols !== sides.length + 1) {
+            fails.push({
+              k: k.id, tag: '对比表',
+              why: '列名与数据列不匹配：标题切成 ' + sides.length + ' 段（' + sides.join(' / ') + '），数据行却是 ' + maxCols + ' 列（应为 ' + (sides.length + 1) + ' 列，含「对比项」）'
+            })
+          }
+        }
+      }
     }
   })
 })

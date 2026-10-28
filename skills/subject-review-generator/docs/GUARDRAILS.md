@@ -4,7 +4,7 @@
 >
 > 与 `EVOLUTION.md`（历史档案，追溯用）不同：本文件是**当前生效的行为约束**，精简到极致。
 
-## 必守规则（13 条）
+## 必守规则（22 条）
 
 1. **总体模板 `samples/` 永不改且必须是空壳**——默认骨架 **`基础模板-复习页-v3.html`（v3 Soft UI）**：`KNOWLEDGE_CATEGORIES=[]`、`QUESTION_BANK` 六键皆 `[]`、无学科正文、无 `btnEnhance`（速览由 patch-enhance 注入）。侧栏须 `minmax(0,1fr)` + `.app-sidebar{overflow-y:auto}`。增强只在学科副本做。契约见 `samples/TEMPLATE-v3.md`
 
@@ -44,6 +44,16 @@
 
 17. **填空题解析必须识别 `（ ）` 空白标记**——习题文件中填空题常用 `（ ）` 或 `（答案）` 格式，解析器必须识别并提取答案，不能漏解析（会导致填空题题型入口消失）。
 
+18. **换主题 ≠ 只改 `:root`**——模板里有一批「浅色主题专用」的硬编码字面量，改变量完全管不到：白描边（`border:1px solid rgba(255,255,255,.9~.95)`）、白玻璃底（`background:rgba(255,255,255,.55)` / `#fff`）、白内高光（`box-shadow:inset 0 1px 0 rgba(255,255,255,.7~.85)`）、白文字投影（`text-shadow ... rgba(255,255,255,.6)`）、冷色焦点（`rgba(37,99,235)` / `rgba(147,197,253)` / `#2563eb`）、白色渐隐起点（`rgba(255,255,255,0)`）。**必须用同一选择器（或更具体选择器）在后位逐条覆盖**。固化：`<同级skill:rv-verifier>/scripts/check-theme.js`，未覆盖会非 0 退出，**页面验收必跑**
+
+19. **`box-shadow: 0 0 0 Npx` 画的是外接矩形**——元素没有 `border-radius` 时，聚焦/选中光圈就是一圈直角方框（换成什么颜色都没用）。新增环形高光前先确认该元素（或其同名类规则）有圆角；`check-theme.js` 会把「有环无角」的选择器列出来
+
+20. **渐隐遮罩在深色底上会露出方块**——`linear-gradient(90deg,rgba(255,255,255,0),var(--bg-card))` 的起点是「白色透明」，浏览器按预乘 alpha 插值，中间段比卡片更暗，卡片右下角就出现一块 2.75em×1.5em 的方块。v3 的 `.concept-card-summary` 根本没做 `-webkit-line-clamp`（不截断），遮罩只会把真正的末几个字刷淡 → **直接 `display:none`**；若确实要保留，起点必须写 `rgba(底色的 RGB, 0)`。同色渐变只是治标，关掉才治本
+
+21. **对比表标题只写「甲 vs 乙」**——渲染器按 `vs` / `与` 切列名，标题里带说明性括号（如「肝素 vs 华法林（给药途径 vs 起效）」）会把括号内的 `vs` 也当分隔符，表头错列；列名段数还必须等于「数据列数 − 1」。说明性文字并进正文。固化：`check-enhance.js`
+
+22. **`config.modules` 在模板模式下只有一部分真的生效**——`patch-enhance.js` 不装配 `modules/*.js`：模板内置（`favorites`/`mastery`/`card-browser`/`search`/`detail-panel`/`navigation`/`choice`/`truefalse`/`quiz`/`wrongbook`/`rv-core`）天然存在，标记驱动（`comparison`/`tree`/`flashcard`）靠 content 里的 `【】` 块，**其余（`duel`/`guess`/`selfcheck`/`lesion-card`/`stage-timeline`）必须另写 patch 脚本**。传 `--modules` 时 patch-enhance 会打印核对结果，出现「模板模式不支持」就不要当成已启用
+
 ---
 
 ## 需要机器校验的（自动化）
@@ -52,5 +62,7 @@
 |--------|------|
 | 副本 JS 语法 | 生成后跑 `vm.Script` |
 | CSS 变量完整性 | `render-compare.js` |
+| **主题硬编码残留 / 直角光圈** | `rv-verifier/scripts/check-theme.js <index.html>`（暗色主题必跑） |
 | 增强标记剥离 | 详情渲染前 strip（自动） |
+| **对比表标题与列数** | `rv-data-builder/scripts/check-enhance.js` |
 | 章节拉通编号 | `rv-data-builder/scripts/renumber-chapters.js`（解析后必跑） |

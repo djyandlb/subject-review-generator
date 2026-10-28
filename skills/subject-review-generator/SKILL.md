@@ -102,16 +102,16 @@ xxx/
 **验收**：5 项全过才 OK；不过打回第2/4步｜**铁律**：FAIL 不静默通过
 
 ### 第 8 步 · rv-builder（主题+架构，🔴必做）
-**命令**：**风格偏好已在第 3 步头脑风暴收集（`config.theme`）**，此处直接用 → ui-ux-pro-max 现搓主题（**须贴合 v3 Soft UI**：改色不删 `--elev-*`/`--space-*`；勿把筛选改回圆药丸、勿拆卡片竖线语言）→ `patch-enhance.js <v3副本> [--theme] --modules <config.modules>`｜**产物**：`<学科名>/theme.css` + 增强副本｜**依赖**：第1步副本+第3步 modules + config.theme
-**验收**：patch 各注入点全✅；副本仍含 `--elev-card` / `transitionKnowledgeList` / `.mastery-pill`；新模块模板版 test-boot 验证｜**铁律**：模板填充=唯一主方式，禁手搓；主题覆盖全量保留 v3 token（见 `TEMPLATE-v3.md`）；**风格偏好第 3 步已定，此处不重复问**
+**命令**：**风格偏好已在第 3 步头脑风暴收集（`config.theme`）**，此处直接用 → ui-ux-pro-max 现搓主题（**须贴合 v3 Soft UI**：改色不删 `--elev-*`/`--space-*`；勿把筛选改回圆药丸、勿拆卡片竖线语言）→ `patch-enhance.js <v3副本> --theme <theme.css> --modules <config.modules>`｜**产物**：`<学科名>/theme.css` + 增强副本｜**依赖**：第1步副本+第3步 modules + config.theme
+**验收**：patch 各注入点全✅；副本仍含 `--elev-card` / `transitionKnowledgeList` / `.mastery-pill`；`--modules` 核对结果里**没有「模板模式不支持」**（有就必须另写 patch 或明示不做）｜**铁律**：模板填充=唯一主方式，禁手搓；主题覆盖**不止 `:root`**——白色描边/白底/白内高光/白文字投影/冷色焦点/白色渐隐起点必须逐选择器覆盖（GUARDRAILS 18-21），写完由 `check-theme.js` 把关；**风格偏好第 3 步已定，此处不重复问**
 
 ### 第 9 步 · 生成网页（🔴必做）
 **命令**：`node ./scripts/fill-template.js xxx/data/sample/基础模板-复习页-v3.html xxx/data/processed/data.json xxx/<学科名>/index.html`（若第8步已在副本上 patch，则填**增强后的副本路径**）｜**产物**：`<学科名>/index.html`｜**依赖**：第2步+第8步
 **验收**：无占位符残留（无 `{{`）；`QUESTION_BANK` 六键在；填充报告含 `[v3 Soft UI]`｜**铁律**：用 data/sample/ v3 副本，禁手搓；禁回填 v1 骨架
 
 ### 第 10 步 · rv-verifier 阶段②（页面验收，🔴必做）
-**命令**：`test-boot.js` + `render-compare.js` 跑 AC1-12｜**产物**：`data/temporary/verify-report.md`｜**依赖**：第9步
-**验收**：AC1-12 全 PASS｜**铁律**：FAIL 报出交 polisher 修复复验
+**命令**：`test-boot.js` + `render-compare.js` + **`check-theme.js`（暗色主题必跑）** 跑 AC1-15｜**产物**：`data/temporary/verify-report.md`｜**依赖**：第9步
+**验收**：AC1-15 全 PASS（AC15 = check-theme 报 0 处未覆盖硬编码 + 无直角光圈）｜**铁律**：FAIL 报出交 polisher 修复复验；主题类 FAIL 只改 theme.css，别动模板骨架
 
 ### 第 11 步 · rv-polisher（最终优化，🔴必做）
 **命令**：调 /recheck 彻查 → 修复（走 CSS 变量）→ 回归｜**产物**：优化 index.html + `<学科名>/polish-report.md`｜**依赖**：第10步
@@ -127,7 +127,7 @@ xxx/
 ## 接口契约
 
 - **数据模型**：`{ subject, categories:[{id,name,icon,subcategories:[{id,name}],concepts:[{id,title,subcategory,mastery(掌握|熟悉|了解),summary,content,tags,isKey}]}], questions:[{id,chapter,type(single|multi|tf|fill|terminology|essay),stem,options,answer,explanation}], config }`，字段全部学科中性
-  - `config.modules`：模块选中列表（数组或逗号分隔字符串，缺省全选；assemble.js 按它装配，填 `rv-core` 强制恒选）
+  - `config.modules`：模块选中列表（数组或逗号分隔字符串，缺省全选；assemble.js 按它装配，填 `rv-core` 强制恒选）。**模板模式下 `patch-enhance.js` 不装配 modules**：模板内置（favorites/mastery/card-browser/search/detail-panel/navigation/choice/truefalse/quiz/wrongbook）+ 标记驱动（comparison/tree/flashcard）之外，`duel/guess/selfcheck/lesion-card/stage-timeline` 需另写 patch 脚本，否则不生效
   - `answer` 取值按题型分化：`single`/`multi` = 正确选项索引(number)或索引数组；`fill`/`essay` = 文本；`terminology` = 定义要点文本；`tf` = `对|错`
   - `content` 为**可信富文本**（允许 `<p>/<b>/<ul>` 等简单标签，前端按白名单渲染，禁止含脚本/事件属性）
 - **模块接口**：`RV.modules[name] = {name, deps, init(ctx), render(ctx)}`；ctx 共享 data/state/store/dom/event/utils
@@ -139,7 +139,8 @@ xxx/
 
 ## 阶段自检（全流程末尾必做，PASS 才算完成）
 
-- **最终验收**：rv-verifier 阶段② AC1-12 全 PASS
+- **最终验收**：rv-verifier 阶段② AC1-15 全 PASS
+- **主题**：`check-theme.js <index.html>` 报 0 处未覆盖、无直角光圈（暗色主题硬门槛）
 - **产物**：index.html 无占位残留（无 `{{`、无空 QUESTION_BANK）
 - **文档**：answer-audit.md / polish-report.md 存在且完整
 - **演进**：本次通用问题已分层落位（GUARDRAILS / EVOLUTION / 脚本固化）
@@ -147,7 +148,7 @@ xxx/
 
 ## 质量要求（最终验收总纲，执行细节在各子 skill）
 
-- **整体架构与 v3 Soft UI 母版一致**：禁止改动三栏 Grid / 标题栏 / 移动端抽屉骨架；只换主题变量与内容；保留 elev/竖线筛选/卡片过渡等 v3 契约（`TEMPLATE-v3.md`）
+- **整体架构与 v3 Soft UI 母版一致**：禁止改动三栏 Grid / 标题栏 / 移动端抽屉骨架；只换主题与内容——**主题 ≠ 只改 `:root`**，白色描边/白底/白内高光/白文字投影/冷色焦点/白色渐隐起点都要逐选择器覆盖（`check-theme.js` 判定）；保留 elev/竖线筛选/卡片过渡等 v3 契约（`TEMPLATE-v3.md`）
 - **未选模块代码不出现在产物中**（AC5）
 - **全部题目经联网审查、答案全对**（AC11）
 - 最终验收 = 阶段自检（AC1-12 全 PASS、无占位残留、文档完整）

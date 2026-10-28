@@ -108,15 +108,16 @@ function checkVars(file) {
   const html = fs.readFileSync(file, 'utf8')
   const style = html.match(/<style>([\s\S]*?)<\/style>/)
   if (!style) return []
-  /* 收集全部 :root 块合并变量（主题覆盖可能产生多块） */
+  /* 收集样式块内「任意作用域」的自定义属性声明，不是只扫 :root。
+     原因：模板会把部分变量定义在局部作用域——例如 .header-search-wrap 内部定义
+     --search-collapsed / --search-expanded。只扫 :root 时这两个变量会被判为
+     「已 var() 引用但未定义」，产出假 FAIL（干净模板同样报错即为此特征）。
+     取舍：宁可漏掉「局部定义却全局引用」这类真错误，也不要假 FAIL 拦住合法产物。 */
   const defined = new Set()
-  const rre = /:root\s*\{([\s\S]*?)\}/g
-  let rm
-  while ((rm = rre.exec(style[1]))) {
-    /* 先剥掉 :root 内注释，避免注释行干扰变量提取 */
-    const cleanRoot = rm[1].replace(/\/\*[\s\S]*?\*\//g, '')
-    cleanRoot.split(';').forEach(v => { const m = v.trim().match(/^(--[\w-]+)/); if (m) defined.add(m[1]) })
-  }
+  const cleanAll = style[1].replace(/\/\*[\s\S]*?\*\//g, '')
+  const dre = /(--[\w-]+)\s*:/g
+  let dm
+  while ((dm = dre.exec(cleanAll))) defined.add(dm[1])
   const used = new Set()
   const re = /var\((--[\w-]+)/g
   let m

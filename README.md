@@ -57,7 +57,7 @@
 | `rv-quiz-designer` | 基于必背知识点出题，六类题型，挂章节 |
 | `rv-answer-verifier` | 逐题双源对比验证（外部检索 / 资料原文），答案-题干匹配校验 |
 | `rv-builder` | 主题构建（CSS 变量）+ 模板 / 母版双模式框架产出 |
-| `rv-verifier` | 数据校验 + 页面验收 AC1-AC12，输出 PASS/FAIL 报告 |
+| `rv-verifier` | 数据校验 + 页面验收 AC1-AC15（含主题硬编码审计），输出 PASS/FAIL 报告 |
 | `rv-polisher` | 生成网页后的必做优化：彻查 UI/UX 与 bug，美化打磨 |
 | `rv-bundle-export` | 多学科合集导航；错题本 / 知识点清单导出为打印版 HTML 或 PDF |
 | `rv-module-developer` | 新模块开发，自动审查并登记进 `manifest.json` 永久入库 |
@@ -104,7 +104,7 @@ subject-review-generator/
 │   ├── rv-data-builder/     #   含 scripts/：check-categories / check-enhance / check-explanation / dedup-questions / renumber-chapters
 │   ├── rv-content-refiner/  #   含 scripts/：export-content.js
 │   ├── rv-builder/          #   含 scripts/：patch-enhance.js
-│   ├── rv-verifier/         #   含 scripts/：test-boot.js / render-compare.js
+│   ├── rv-verifier/         #   含 scripts/：test-boot.js / render-compare.js / check-theme.js
 │   └── rv-quiz-designer/ rv-answer-verifier/ rv-polisher/ \
 │       rv-bundle-export/ rv-module-developer/ rv-updater/
 └── vendor/                  # 10 个第三方依赖技能
@@ -244,7 +244,7 @@ RV.modules['模块名'] = { name, deps: [...], init(ctx), render(ctx) }
 
 ## 九、成长机制
 
-- **`docs/GUARDRAILS.md`**：当前生效的护栏清单（≤12 条），执行前必读，防止历史错误复发。
+- **`docs/GUARDRAILS.md`**：当前生效的护栏清单（22 条），执行前必读，防止历史错误复发。
 - **`docs/EVOLUTION.md`**：演进档案。每次使用发现的问题按分层策略沉淀——可机器校验的固化进脚本，可提炼的更新护栏，其余归档。
 
 ---

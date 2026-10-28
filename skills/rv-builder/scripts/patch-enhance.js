@@ -9,6 +9,7 @@
  *   5. 增强聚合视图（renderMainEnhance + btnEnhance 点击切换）
  *   6. 移动端触控优化（小控件 ≥40px）
  *   7. （可选）主题覆盖：--theme 传 CSS 路径，替换 :root 段
+ *   8. 可访问性补齐（关闭类按钮 aria-label + 弹窗 role="dialog"/aria-modal）
  * 幂等：重复运行不重复注入（有标记守卫）。注入标记：<!-- ENH-{name} -->
  */
 'use strict'
@@ -21,9 +22,11 @@ if (process.argv.length < 3) {
 }
 const P = path.resolve(process.argv[2])
 let themePath = null
+let modulesArg = null
 const argv = process.argv.slice(3)
 for (let i = 0; i < argv.length; i++) {
   if (argv[i] === '--theme' && argv[i + 1]) themePath = path.resolve(argv[i + 1])
+  if (argv[i] === '--modules' && argv[i + 1]) modulesArg = argv[i + 1]
 }
 if (!fs.existsSync(P)) { console.error('模板不存在: ' + P); process.exit(1) }
 let out = fs.readFileSync(P, 'utf8')
@@ -45,7 +48,7 @@ function ensureCmpCss() {
     console.log('  ⏭ [css] cmp/enh 对比表样式已就绪')
     return
   }
-  const dual = "/* Enhance markers — support both enh-* (template) and cmp-* (patch-enhance JS) */\n.enh-cmp,.cmp-wrap{margin-top:var(--space-3);border:1px solid var(--color-border);border-radius:var(--radius-md);overflow:hidden;box-shadow:var(--elev-2);background:var(--bg-card)}\n.enh-cmp-head,.cmp-head{background:linear-gradient(115deg,var(--color-primary),color-mix(in srgb,var(--color-primary) 70%,var(--color-accent)));color:var(--color-on-header);padding:9px var(--space-3);font-weight:650;font-size:.86rem;box-shadow:0 4px 14px rgba(var(--header-rgb),0.18);line-height:1.35;border-bottom:1px solid rgba(255,255,255,0.12)}\n.enh-cmp-scroll{overflow-x:auto}\n.enh-cmp-table,.cmp-table{width:100%;border-collapse:collapse;border-spacing:0;font-size:.82rem;table-layout:fixed;margin:0}\n.enh-cmp-table th,.cmp-table th{background:var(--bg-soft);color:var(--text-light);text-align:left;padding:7px var(--space-3);border-bottom:1px solid var(--color-border);font-weight:600;vertical-align:top;word-break:break-word}\n.enh-cmp-table td,.cmp-table td,.cmp-table .cmp-cell{padding:7px var(--space-3);border-bottom:1px solid var(--color-border-soft);vertical-align:top;line-height:1.55;text-align:left;word-break:break-word;overflow-wrap:anywhere}\n.enh-cmp-table tr:last-child td,.cmp-table tr:last-child td{border-bottom:none}\n.enh-cmp-table tr:nth-child(even) td,.cmp-table tr:nth-child(even) td{background:var(--bg-soft)}\n.enh-cmp-key,.cmp-key,.cmp-table .cmp-key,.cmp-table th.cmp-key{width:22%;font-weight:600;color:var(--color-primary);background:var(--bg-card-hover)!important}\n.enh-cmp-table tr:hover td,.cmp-table tr:hover td{background:var(--hover-bg)}\n@media(max-width:640px){.enh-cmp-key,.cmp-key,.cmp-table .cmp-key{width:30%}.enh-cmp-table,.cmp-table{font-size:.78rem}}\n.enh-tree,.enh-flow,.enh-fc{margin-top:var(--space-3);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-3);background:var(--bg-card);box-shadow:var(--elev-2),var(--inset-highlight)}\n.enh-tree-title,.enh-flow-title,.enh-fc-title{font-family:var(--font-heading);font-weight:650;font-size:.86rem;margin-bottom:var(--space-2);color:var(--color-primary)}\n.enh-tree-row{padding-top:2px;font-size:.82rem;line-height:1.5}\n.enh-tree-row.lvl-1{font-weight:600}\n.enh-flow-steps{display:flex;flex-wrap:wrap;gap:var(--space-1);align-items:center}\n.enh-flow-step{background:var(--bg-soft);padding:var(--space-1) var(--space-3);border-radius:999px;font-size:.76rem;border:1px solid var(--color-border-soft);box-shadow:var(--elev-1);transition:background var(--transition-fast),border-color var(--transition-fast),box-shadow var(--transition-fast)}\n.enh-flow-step:hover{background:var(--hover-bg);border-color:rgba(var(--accent-rgb),0.28);box-shadow:var(--elev-2)}\n.enh-fc-card,.fc-card{border:1px solid var(--color-border-soft);border-radius:var(--radius-sm);padding:var(--space-2) var(--space-3);margin-bottom:var(--space-1);cursor:pointer;font-size:.82rem;background:var(--bg-card);box-shadow:var(--elev-1);transition:box-shadow var(--transition-fast),border-color var(--transition-fast),transform var(--transition-fast)}\n.enh-fc-card:hover,.fc-card:hover{box-shadow:var(--elev-2);border-color:rgba(var(--accent-rgb),0.22);transform:translateY(-1px)}\n.enh-fc-q,.fc-q{font-weight:600}\n.enh-fc-a,.fc-a{display:none;margin-top:var(--space-1);color:var(--color-primary);padding-top:var(--space-1);border-top:1px dashed var(--color-border-soft);animation:reveal-in var(--duration-fast) var(--ease) both}\n.enh-fc-card.open .enh-fc-a,.fc-card.open .fc-a{display:block}"
+  const dual = "/* Enhance markers — support both enh-* (template) and cmp-* (patch-enhance JS) */\n.enh-cmp,.cmp-wrap{margin-top:var(--space-3);border:1px solid var(--color-border);border-radius:var(--radius-md);overflow:hidden;box-shadow:var(--elev-2);background:var(--bg-card);container-type:inline-size}\n.enh-cmp-head,.cmp-head{background:linear-gradient(115deg,var(--color-primary),color-mix(in srgb,var(--color-primary) 70%,var(--color-accent)));color:var(--color-on-header);padding:9px var(--space-3);font-weight:650;font-size:.86rem;box-shadow:0 4px 14px rgba(var(--header-rgb),0.18);line-height:1.35;border-bottom:1px solid rgba(255,255,255,0.12)}\n.enh-cmp-scroll,.cmp-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}\n.enh-cmp-table,.cmp-table{width:100%;min-width:100%;border-collapse:separate;border-spacing:0;font-size:.82rem;table-layout:auto;margin:0}\n.enh-cmp-table th,.cmp-table th{background:var(--bg-soft);color:var(--text-light);text-align:left;padding:8px var(--space-3);border-bottom:1px solid var(--color-border);font-weight:600;vertical-align:top;word-break:break-word;min-width:96px;position:sticky;top:0;z-index:2}\n.enh-cmp-table td,.cmp-table td,.cmp-table .cmp-cell{padding:8px var(--space-3);border-bottom:1px solid var(--color-border-soft);vertical-align:top;line-height:1.55;text-align:left;word-break:break-word;overflow-wrap:anywhere;min-width:96px}\n.enh-cmp-table tr:last-child td,.cmp-table tr:last-child td{border-bottom:none}\n.enh-cmp-table tr:nth-child(even) td,.cmp-table tr:nth-child(even) td{background:var(--bg-soft)}\n.enh-cmp-key,.cmp-key,.cmp-table .cmp-key,.cmp-table th.cmp-key{width:auto;min-width:96px;font-weight:600;color:var(--color-primary);background:var(--bg-card-hover)!important;position:sticky;left:0;z-index:1;box-shadow:1px 0 0 var(--color-border-soft)}\n.enh-cmp-table th.cmp-key,.cmp-table th.cmp-key{z-index:3}\n.enh-cmp-table tr:hover td,.cmp-table tr:hover td{background:var(--hover-bg)}\n.enh-cmp-scroll::-webkit-scrollbar,.cmp-scroll::-webkit-scrollbar{height:8px}\n.enh-cmp-scroll::-webkit-scrollbar-thumb,.cmp-scroll::-webkit-scrollbar-thumb{background:rgba(var(--header-rgb),0.18);border-radius:999px}\n.enh-cmp-scroll::-webkit-scrollbar-track,.cmp-scroll::-webkit-scrollbar-track{background:transparent}\n/* 列数自适应密度：列数越多越紧凑，保证多列表格在详情面板窄容器内也能完整显示 */\n.cmp-table.cmp-cols-3 th,.cmp-table.cmp-cols-3 td{font-size:.8rem;padding:7px 9px;min-width:76px}\n.cmp-table.cmp-cols-4 th,.cmp-table.cmp-cols-4 td{font-size:.79rem;padding:7px 8px;min-width:68px}\n.cmp-table.cmp-cols-5 th,.cmp-table.cmp-cols-5 td{font-size:.755rem;padding:6px 7px;min-width:64px}\n.cmp-table.cmp-cols-6 th,.cmp-table.cmp-cols-6 td{font-size:.72rem;padding:5px 6px;min-width:56px}\n.cmp-table.cmp-cols-7 th,.cmp-table.cmp-cols-7 td,.cmp-table.cmp-cols-8 th,.cmp-table.cmp-cols-8 td{font-size:.7rem;padding:5px 5px;min-width:50px}\n.cmp-table[class*=cmp-cols-] td.cmp-key,.cmp-table[class*=cmp-cols-] th.cmp-key{min-width:60px}\n/* 窄容器：列宽按内容自适应贴合容器——min-width 归零让 auto 布局可压缩，配合 overflow-wrap 换行，表格宽 = 容器宽，既不横向滚动也不裁列 */\n@container (max-width:364px){.cmp-table th,.cmp-table td,.cmp-table[class*=cmp-cols-] th,.cmp-table[class*=cmp-cols-] td{min-width:0}}\n/* 窄容器可选开关：给表格加 .cmp-wide 类即在此宽度下转为「按属性分组的纵向列表」。渲染端默认不输出该类——面板内保持表格并横向滚动（首列冻结 + 标题钉住），纵向列表仅在移动端视口(≤560px)生效。 */\n@container (max-width:364px){.cmp-table.cmp-wide,.cmp-table.cmp-wide tbody,.cmp-table.cmp-wide tr,.cmp-table.cmp-wide td{display:block;width:auto;min-width:0}.cmp-table.cmp-wide thead{display:none}.cmp-table.cmp-wide tr{border-bottom:1px solid var(--color-border-soft);padding:var(--space-1) 0}.cmp-table.cmp-wide tr:last-child{border-bottom:none}.cmp-table.cmp-wide td{border-bottom:none;padding:0}.cmp-table.cmp-wide tr:nth-child(even) td{background:transparent}.cmp-table.cmp-wide td.cmp-key{font-weight:650;color:var(--color-primary);background:var(--bg-soft)!important;padding:5px var(--space-3);margin-bottom:2px;position:static;box-shadow:none}.cmp-table.cmp-wide td.cmp-cell{display:flex;gap:var(--space-2);padding:4px var(--space-3);font-size:.79rem}.cmp-table.cmp-wide td.cmp-cell::before{content:attr(data-col);flex:0 0 4.8em;color:var(--text-muted);font-weight:500;overflow-wrap:anywhere}.cmp-table.cmp-wide td.cmp-cell:empty{display:none}}\n@media(max-width:560px){.cmp-table,.cmp-table tbody,.cmp-table tr,.cmp-table td{display:block;width:auto;min-width:0}.cmp-table thead{display:none}.cmp-table tr{border-bottom:1px solid var(--color-border-soft);padding:var(--space-1) 0}.cmp-table tr:last-child{border-bottom:none}.cmp-table td{border-bottom:none;padding:0}.cmp-table tr:nth-child(even) td{background:transparent}.cmp-table td.cmp-key{font-weight:650;color:var(--color-primary);background:var(--bg-soft)!important;padding:5px var(--space-3);margin-bottom:2px;position:static;box-shadow:none}.cmp-table td.cmp-cell{display:flex;gap:var(--space-2);padding:4px var(--space-3);font-size:.79rem}.cmp-table td.cmp-cell::before{content:attr(data-col);flex:0 0 4.8em;color:var(--text-muted);font-weight:500;overflow-wrap:anywhere}.cmp-table td.cmp-cell:empty{display:none}}\n.enh-tree,.enh-flow,.enh-fc{margin-top:var(--space-3);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-3);background:var(--bg-card);box-shadow:var(--elev-2),var(--inset-highlight)}\n.enh-tree-title,.enh-flow-title,.enh-fc-title{font-family:var(--font-heading);font-weight:650;font-size:.86rem;margin-bottom:var(--space-2);color:var(--color-primary)}\n.enh-tree-row{padding-top:2px;font-size:.82rem;line-height:1.5}\n.enh-tree-row.lvl-1{font-weight:600}\n.enh-flow-steps{display:flex;flex-wrap:wrap;gap:var(--space-1);align-items:center}\n.enh-flow-step{background:var(--bg-soft);padding:var(--space-1) var(--space-3);border-radius:999px;font-size:.76rem;border:1px solid var(--color-border-soft);box-shadow:var(--elev-1);transition:background var(--transition-fast),border-color var(--transition-fast),box-shadow var(--transition-fast)}\n.enh-flow-step:hover{background:var(--hover-bg);border-color:rgba(var(--accent-rgb),0.28);box-shadow:var(--elev-2)}\n.enh-fc-card,.fc-card{border:1px solid var(--color-border-soft);border-radius:var(--radius-sm);padding:var(--space-2) var(--space-3);margin-bottom:var(--space-1);cursor:pointer;font-size:.82rem;background:var(--bg-card);box-shadow:var(--elev-1);transition:box-shadow var(--transition-fast),border-color var(--transition-fast),transform var(--transition-fast)}\n.enh-fc-card:hover,.fc-card:hover{box-shadow:var(--elev-2);border-color:rgba(var(--accent-rgb),0.22);transform:translateY(-1px)}\n.enh-fc-q,.fc-q{font-weight:600}\n.enh-fc-a,.fc-a{display:none;margin-top:var(--space-1);color:var(--color-primary);padding-top:var(--space-1);border-top:1px dashed var(--color-border-soft);animation:reveal-in var(--duration-fast) var(--ease) both}\n.enh-fc-card.open .enh-fc-a,.fc-card.open .fc-a{display:block}"
   const mark = '</style>'
   const i = out.lastIndexOf(mark)
   if (i < 0) { console.log('  ⚠ [css] 未找到 </style>，跳过对比表样式'); return }
@@ -150,26 +153,59 @@ function parseContentEnhancements(content) {
   var text = String(content || '').replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ')
   var html = ''
   var m
-  /* 对比表 */
+  /* 对比表：列数完全由数据决定 —— 不写死 3 列，也不把多余的值用 | 拼进同一格（会丢列）
+   * 标题支持两种写法：
+   *   ①【对比表:A vs B vs C】          → 卡片头「A vs B vs C」，表头列名 A / B / C
+   *   ②【对比表:表名（A vs B vs C）】  → 卡片头「表名」，表头列名 A / B / C（推荐，可保留概括名） */
   var cmpRe = /【对比表\\s*[:：]\\s*([^】]+)】\\s*\\n?([\\s\\S]*?)(?=(?:【对比表|【树|【流程|【速记|【结构卡|【分期|\\n\\s*\\n|$))/g
   while ((m = cmpRe.exec(text))) {
-    var sides = (m[1] || '').split(/\\s*(?:vs\\.?|VS|与)\\s*/).map(function (s) { return s.trim() })
-    var rows = []
-    ;(m[2] || '').split('\\n').forEach(function (line) {
-      line = line.trim().replace(/^-\\s*/, '')
-      if (!line) return
-      var p = line.split('|').map(function (s) { return s.trim() })
-      if (p.length >= 3) rows.push('<tr><td class="cmp-key">' + escHtml(p[0]) + '</td><td class="cmp-cell">' + escHtml(p[1]) + '</td><td class="cmp-cell">' + escHtml(p.slice(2).join('|').trim()) + '</td></tr>')
-    })
-    if (rows.length) {
-      html += '<div class="cmp-wrap">' +
-        '<div class="cmp-head">⚖️ ' + escHtml(sides.join(' vs ')) + '</div>' +
-        '<table class="cmp-table"><thead><tr class="cmp-header">' +
-        '<th class="cmp-key">对比项</th>' +
-        '<th>' + escHtml(sides[0] || '左') + '</th>' +
-        '<th>' + escHtml(sides[1] || '右') + '</th></tr></thead><tbody>' +
-        rows.join('') + '</tbody></table></div>'
+    var cmpTitle = (m[1] || '').trim()
+    var splitSides = function (str) {
+      return String(str || '').split(/\\s*(?:vs\\.?|VS|与)\\s*/).map(function (s) { return s.trim() }).filter(Boolean)
     }
+    /* 表名 + 列名分离：仅当括号内含 ≥2 段时才认定是列名，否则括号只是表名的一部分 */
+    var headName = cmpTitle
+    var sides = []
+    var paren = cmpTitle.match(/[（(]([^）)]*)[)）]/)
+    if (paren) {
+      var innerSides = splitSides(paren[1])
+      if (innerSides.length > 1) { headName = cmpTitle.replace(paren[0], '').trim() || cmpTitle; sides = innerSides }
+    }
+    if (!sides.length) sides = splitSides(cmpTitle)
+    /* 先扫全部数据行，最大段数 = 表格列数（含「对比项」列） */
+    var grid = []
+    var maxCols = 0
+    ;(m[2] || '').split('\\n').forEach(function (line) {
+      line = line.trim().replace(/^-\\s*/, '').replace(/^\\*\\s*/, '')
+      if (!line || line.indexOf('【') === 0) return
+      var p = line.split('|').map(function (s) { return s.trim() })
+      if (p.length >= 2) { grid.push(p); if (p.length > maxCols) maxCols = p.length }
+    })
+    if (!grid.length) continue
+    /* 列名：优先用标题里的 vs 列表，缺失则用「对象N」兜底 */
+    var colNames = []
+    for (var j = 1; j < maxCols; j++) colNames.push(sides.length > 1 ? (sides[j - 1] || ('对象' + j)) : ('对象' + j))
+    var ths = '<th class="cmp-key">对比项</th>'
+    colNames.forEach(function (n) { ths += '<th>' + escHtml(n) + '</th>' })
+    /* 每行补齐到 maxCols：缺格补空 td 保证列对齐，绝不把多值用 | 合并。
+     * data-col 写入所属对象名——窄屏转置布局靠它渲染「对象名：值」，宽屏不使用。 */
+    var rows = grid.map(function (p) {
+      var tds = '<td class="cmp-key">' + escHtml(p[0] || '') + '</td>'
+      for (var i = 1; i < maxCols; i++) {
+        tds += '<td class="cmp-cell" data-col="' + escHtml(colNames[i - 1] || '') + '">' + escHtml(p[i] || '') + '</td>'
+      }
+      return '<tr>' + tds + '</tr>'
+    })
+    /* 显示形态：面板里一律保持表格（对比表的价值就是横向并排比较）。
+     * 容器窄时不转纵向列表、不压扁列宽，改为「首列冻结 + 横向滚动」，靠列数自适应密度
+     * 收紧字号与列宽。CSS 保留了 .cmp-wide 转列表规则作为可选开关，渲染端默认不输出。 */
+    /* 结构分层：.cmp-wrap 只做卡片外观（overflow:hidden 裁圆角），表格进 .cmp-scroll 滚动。
+     * 若把标题栏与表格放在同一滚动容器里，横滚时标题会被一并拖走、右侧露出卡片底板。 */
+    html += '<div class="cmp-wrap">' +
+      '<div class="cmp-head">⚖️ ' + escHtml(headName) + '</div>' +
+      '<div class="cmp-scroll">' +
+      '<table class="cmp-table cmp-cols-' + maxCols + '"><thead><tr class="cmp-header">' + ths + '</tr></thead><tbody>' +
+      rows.join('') + '</tbody></table></div></div>'
   }
   /* 分类树 */
   var treeRe = /【树\\s*[:：]\\s*([^\\n]+)】\\s*\\n([\\s\\S]*?)(?=(?:【树|【流程|【速记|【对比表|【结构卡|【分期|\\n\\s*\\n|$))/
@@ -416,7 +452,8 @@ function patchTouch() {
   .detail-back-btn { padding: 10px 14px; min-height: 40px; }
   .concept-card-star { padding: 10px; min-width: 40px; min-height: 40px; margin: -6px; }
   .question-tf-btn { padding: 10px 20px; min-height: 40px; }
-  .subcat-tab { padding: 8px 12px; min-height: 36px; }
+  .subcat-tab { padding: 10px 12px; min-height: 40px; }
+  .modal-close { min-width: 40px; min-height: 40px; }
 }
 `
   /* 定位最后一个 </style> 注入（防多 style 块时全堆进第一个） */
@@ -424,6 +461,37 @@ function patchTouch() {
   if (idx < 0) { console.log('  ⚠ [6] 未找到 </style>，触控优化未注入'); return }
   out = out.slice(0, idx) + touchCss + '\n' + guard('touch') + '\n' + out.slice(idx)
   console.log('  ✅ [6] 移动端触控优化')
+}
+
+/* ============ 8. 可访问性补齐（关闭类按钮可访问名 + 弹窗 dialog 语义） ============
+ * 模板的关闭按钮内容是纯符号「&times;」，没有可访问名——屏幕阅读器只会读出「×」，
+ * 键盘/辅助技术用户无法判断这个按钮是干什么的；刷题弹窗的 .modal 容器也缺
+ * role="dialog" / aria-modal，模态语义未声明。二者都是模板级缺陷，逐副本补齐。
+ * 幂等：区分「命中并已修」与「已就绪」，全部命中才写守卫；将来模板上游修好后此处自动 no-op。 */
+function patchA11y() {
+  if (has('a11y')) return
+  const items = [
+    { name: '侧栏关闭按钮', re: /<button class="sidebar-mobile-close" id="sidebarClose"([^>]*)>/,
+      repl: '<button class="sidebar-mobile-close" id="sidebarClose" aria-label="关闭菜单" title="关闭菜单"$1>' },
+    { name: '详情关闭按钮', re: /<button class="btn-detail-close" id="detailClose"([^>]*)>/,
+      repl: '<button class="btn-detail-close" id="detailClose" aria-label="关闭详情"$1>' },
+    { name: '弹窗关闭按钮', re: /<button class="modal-close" id="quizModalClose"([^>]*)>/,
+      repl: '<button class="modal-close" id="quizModalClose" aria-label="关闭弹窗" title="关闭弹窗"$1>' },
+    { name: '弹窗 dialog 语义', re: /<div class="modal"([^>]*)>/,
+      repl: '<div class="modal" role="dialog" aria-modal="true" aria-labelledby="quizModalTitle"$1>' }
+  ]
+  const miss = []
+  let changed = 0
+  items.forEach(it => {
+    const m = out.match(it.re)
+    if (!m) { miss.push(it.name); return }                 /* 模板结构不同，跳过不硬改 */
+    if (m[0].includes('aria-label') || m[0].includes('role="dialog"')) return  /* 已就绪 */
+    out = out.replace(it.re, it.repl)
+    changed++
+  })
+  if (miss.length) { console.log('  ⚠ [8] 可访问性补齐未命中: ' + miss.join('、') + '（模板结构不同，跳过）'); return }
+  if (!writeGuard('a11y')) return
+  console.log('  ✅ [8] 可访问性补齐（' + (changed ? changed + ' 处新修' : '模板已就绪') + '）')
 }
 
 /* ============ 7. 主题覆盖（可选） ============ */
@@ -444,13 +512,49 @@ function patchTheme() {
   console.log('  ✅ [7] 主题覆盖应用')
 }
 
+/* 模板模式下模块能力边界：patch-enhance 只做「模板增强」，不装配 modules/*.js。
+ * 传了 --modules 必须显式核对并告警——静默忽略会造成「以为启用了，页面里却没有」。 */
+function reportModules() {
+  if (!modulesArg) return
+  const list = String(modulesArg).split(/[,\s]+/).map(s => s.trim()).filter(Boolean)
+  if (!list.length) return
+  const BUILTIN = { 'rv-core': 1, favorites: 1, mastery: 1, 'card-browser': 1, search: 1, 'detail-panel': 1, navigation: 1, choice: 1, truefalse: 1, quiz: 1, wrongbook: 1 }
+  const MARKER = { comparison: '【对比表】', tree: '【树】', flashcard: '【速记】/【流程】' }
+  const MODULE_ONLY = { duel: '鉴别挑战', guess: '填空猜一猜', selfcheck: '自测', 'lesion-card': '病变卡', 'stage-timeline': '分阶段时间线' }
+  const okB = [], okM = [], no = []
+  list.forEach(m => {
+    if (BUILTIN[m]) okB.push(m)
+    else if (MARKER[m]) okM.push(m + ' → ' + MARKER[m])
+    else if (MODULE_ONLY[m]) no.push(m + '（' + MODULE_ONLY[m] + '）')
+    else no.push(m + '（未知模块）')
+  })
+  console.log('  · 模块核对（模板模式）')
+  if (okB.length) console.log('    ✅ 模板内置 ' + okB.length + ' 项: ' + okB.join(', '))
+  if (okM.length) console.log('    ✅ 标记驱动 ' + okM.length + ' 项: ' + okM.join('、') + '（需 content 里有对应标记块）')
+  if (no.length) {
+    console.log('    ❌ 模板模式不支持 ' + no.length + ' 项: ' + no.join('、'))
+    console.log('       这些只在模块化页面（assemble.js）里存在，模板填充不会装配。')
+    console.log('       要用就另写 patch 脚本（按钮 + 弹窗 + CSS + JS），插在 patch-enhance 之后、fill-template 之前；')
+    console.log('       不要默认它已经生效。')
+  }
+}
+
 console.log('模板增强补丁 → ' + P)
+reportModules()
 ensureCmpCss()
 fixBadge()
 patchDynamicTabs()
 patchEnhance()
 patchEntry()
 patchTouch()
+patchA11y()
 patchTheme()
 fs.writeFileSync(P, out, 'utf8')
 console.log('完成 ✅ 文件大小:', (fs.statSync(P).size / 1024).toFixed(1), 'KB')
+if (themePath) {
+  console.log('')
+  console.log('⚠ 主题验收（必做，换主题只改 :root 不够）：')
+  console.log('   生成页面后跑  node <同级skill:rv-verifier>/scripts/check-theme.js <index.html>')
+  console.log('   它按层叠顺序核对：白描边 / 白底 / 白内高光 / 白文字投影 / 冷色焦点 / 白色渐隐起点')
+  console.log('   是否有未覆盖的硬编码残留（未覆盖会以非 0 退出）。')
+}

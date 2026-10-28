@@ -46,23 +46,23 @@ description: 质检验收。整合数据校验与页面验收：阶段①校验 
 6. **增强标记**：跑 `<同级skill:rv-data-builder>/scripts/check-enhance.js`——空标记（标记后无内容）/无标题/<br>连接/树空格层级 = FAIL，打回 content-refiner 重写（否则详情增强卡不渲染）
 
 ### 阶段 ② · 页面验收（🔴 必做，主编排第 10 步）
-- **动作**：跑 AC1-AC12 清单 + 端到端运行验证 + 模板一致性
-- **命令**：`node ./scripts/test-boot.js <index.html>`（boot 无异常/主区渲染/搜索匹配）+ `node ./scripts/render-compare.js <成品> <原模板>`（CSS 行数 / JS 函数数 / 渲染类名 / **CSS 变量完整性**——四指标全过才 PASS，差异仅允许数据量；**`<原模板>` = 增强前的模板副本 `xxx/data/sample/基础模板-*.html`，不是增强后的成品**）
+- **动作**：跑 AC1-AC15 清单 + 端到端运行验证 + 模板一致性 + 主题硬编码审计
+- **命令**：`node ./scripts/test-boot.js <index.html>`（boot 无异常/主区渲染/搜索匹配）+ `node ./scripts/render-compare.js <成品> <原模板>`（CSS 行数 / JS 函数数 / 渲染类名 / **CSS 变量完整性**——四指标全过才 PASS，差异仅允许数据量；**`<原模板>` = 增强前的模板副本 `xxx/data/sample/基础模板-*.html`，不是增强后的成品**）+ `node ./scripts/check-theme.js <成品>`（**暗色主题必跑**：按层叠顺序核对白描边 / 白底 / 白内高光 / 白文字投影 / 冷色焦点 / 白色渐隐起点是否已被 theme.css 覆盖，未覆盖非 0 退出；同时列出「有光圈但无圆角」的直角框）
 - **产物**：`xxx/data/temporary/verify-report.md`
-- **验收**：AC1-AC14 全 PASS
+- **验收**：AC1-AC15 全 PASS
 - **依赖**：主编排第 9 步（生成后）
 
-**AC1-AC12 清单（逐项 PASS/FAIL，不可抽查；标注验证方式：🛠脚本自动 / 👁人工核验）**：
+**AC1-AC15 清单（逐项 PASS/FAIL，不可抽查；标注验证方式：🛠脚本自动 / 👁人工核验）**：
 - AC1 三栏 Grid 正常渲染（🛠render-compare 类名比对 + 👁目测） / AC2 全部选中模块功能可用（👁逐模块点击） / AC3 两学科主题不同（多学科场景；单学科可跳过）（👁） / AC4 localStorage 键带学科名不串（👁查 `STORAGE_FAV/WRONG` 前缀） / AC5 未选模块代码不进页面（🛠`grep` 未选模块名应无命中）
 - AC6 移动端 <768px 抽屉可用（👁） / AC7 题库 type 枚举 + answer 类型匹配（🛠阶段①已验 + 👁） / AC8 选择题干扰项同章节（👁抽验） / AC9 错题本收录/删除（👁交互） / AC10 必背概念全覆盖（🛠阶段①覆盖校验）
-- AC11 答案审查报告存在且全检（👁`<学科名>/answer-audit.md` 存在 + N题N条） / AC12 模板模式产物无占位残留（🛠`grep '{{'` 与空 `KNOWLEDGE_CATEGORIES` 应无命中） / AC13 **详情增强渲染**：含【树】/【流程】/【对比表】/【速记】标记的概念，详情面板能渲染增强卡（🛠产物含 `parseContentEnhancements` + 👁抽查 3 卡有 🌳/🔀/⚖️/🎴） / AC14 **multi 判题**：勾选错误选项提交 → 选错的红（selected-wrong）、选对+正确答案绿（selected-correct），不是全绿（👁交互验证）
+- AC11 答案审查报告存在且全检（👁`<学科名>/answer-audit.md` 存在 + N题N条） / AC12 模板模式产物无占位残留（🛠`grep '{{'` 与空 `KNOWLEDGE_CATEGORIES` 应无命中） / AC13 **详情增强渲染**：含【树】/【流程】/【对比表】/【速记】标记的概念，详情面板能渲染增强卡（🛠产物含 `parseContentEnhancements` + 👁抽查 3 卡有 🌳/🔀/⚖️/🎴） / AC14 **multi 判题**：勾选错误选项提交 → 选错的红（selected-wrong）、选对+正确答案绿（selected-correct），不是全绿（👁交互验证） / AC15 **主题硬编码**：`check-theme.js` 报 0 处未覆盖、无「直角光圈」（🛠脚本；暗色主题硬门槛——白色描边/白底/白内高光/白文字投影/冷色焦点/白色渐隐起点必须已被覆盖）
 
 **铁律**：任何 AC 不过 → 报 FAIL，交给 rv-polisher / rv-module-developer 修复后复验
 
 ## 阶段自检（流程末尾必做，PASS 才交付）
 
 - **阶段①**：check-report.md 含 6 项全部 PASS 结论（不静默通过）
-- **阶段②**：verify-report.md 含 AC1-14 全部 PASS
+- **阶段②**：verify-report.md 含 AC1-15 全部 PASS（AC15 主题审计必跑）
 - **对账**：报告含 FAIL + 原因 + 涉及 id（如有 FAIL）
 - **FAIL → 明确打回，禁止静默通过**
 
@@ -75,4 +75,4 @@ description: 质检验收。整合数据校验与页面验收：阶段①校验 
 
 - 打回：rv-doc-extractor（提取不完整）/ rv-data-builder（结构/概念归类问题）/ rv-quiz-designer（题库）
 - 修复：rv-polisher / rv-module-developer
-- 工具：`./scripts/test-boot.js` / `./scripts/render-compare.js`
+- 工具：`./scripts/test-boot.js` / `./scripts/render-compare.js` / `./scripts/check-theme.js`
